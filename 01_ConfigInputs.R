@@ -1,13 +1,26 @@
+# Copyright 2025 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and limitations under the License.
+
+
 # ==============================================================================
 # Script name:      01_ConfigInputs.R
 # ------------------------------------------------------------------------------
-# Script version:   
+# Script version:
 # 2025-04-01:       v3
 #
 # ------------------------------------------------------------------------------
 # Notes/Objectives:
 # loads common libraries, sets default switches, colours, ggplot formatting
-# 
+#
 # ==============================================================================
 #
 ## LOAD CRAN PACKAGES --------------------------------------------------
@@ -45,27 +58,33 @@ pkgs <- c('tidyverse',
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-lapply(pkgs, library, character.only = TRUE) 
+lapply(pkgs, library, character.only = TRUE)
 
 
 
 # MANUAL INPUTS ----------------------------------------------------------------
 
 # Choose location to save files
-figure_location <- "Groundwater Level Forecasting Toolkit Phase 2 V2.0/Output/"
-data_location <- "Groundwater Level Forecasting Toolkit Phase 2 V2.0/data/"
-model_path <- "Groundwater Level Forecasting Toolkit Phase 2 V2.0/models/"
-user_input_location <- "Groundwater Level Forecasting Toolkit Phase 2 V2.0/user_inputs/"
+figure_location <- "Output/"
+data_location <- "data/"
+model_path <- "models/"
+user_input_location <- "user_inputs/"
+
+# Create the folders if they don't exist
+dir.create(figure_location, showWarnings = FALSE)
+dir.create(data_location, showWarnings = FALSE)
+dir.create(model_path, showWarnings = FALSE)
+dir.create(paste0(figure_location, "Model_results"), showWarnings = FALSE)
 
 
-# Fill in well information based on location 
+# Fill in well information based on location
 
-pgown_well_info_all <- read_csv(paste0(user_input_location,"Forecasting_Model_Data.csv")) %>%
+pgown_well_info_all <- read_csv(paste0(user_input_location, "Forecasting_Model_Data.csv")) %>%
   filter(!is.na(Climate_station_Id) & !is.na(Lag_time)) %>%
   mutate(Climate_Infilled_id = ifelse(is.na(Climate_Infilled_id), 0, Climate_Infilled_id),
          Climate_secondary_Infilled = ifelse(is.na(Climate_secondary_Infilled), 0, Climate_secondary_Infilled),
          Climate_tertiary_Infilled = ifelse(is.na(Climate_tertiary_Infilled), 0, Climate_tertiary_Infilled),
-         Climate_quaternary_Infilled = ifelse(is.na(Climate_quaternary_Infilled), 0, Climate_quaternary_Infilled)) 
+         Climate_quaternary_Infilled = ifelse(is.na(Climate_quaternary_Infilled), 0, Climate_quaternary_Infilled))
 
 
 Regional_group_list <- pgown_well_info_all %>%
@@ -77,7 +96,7 @@ Regional_group_list <- as.list(Regional_group_list)
 
 
 # User set number of days to forecast
-forecast_days <- c(14,30,60,90)
+forecast_days <- c(14, 30, 60, 90)
 
 # Number of cores (for parallel computing)
 num_cores <- 4

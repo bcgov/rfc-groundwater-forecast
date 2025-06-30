@@ -1,12 +1,12 @@
 [![img](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 
-rfc-groundwater-forecast
+Groundwater Level Forecasting - River Forecast Centre
 ============================
 
 ### Project Status
 
-This project is under development.
+This project is under development and will be subject to a large amount of change.
 
 ### Getting Help or Reporting an Issue
 

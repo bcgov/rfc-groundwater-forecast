@@ -1,14 +1,14 @@
 forecast_model <- function(Time_series_data, forecast_days, num_cores, figure_location,output_path, model_path,data_location, pgown_well_info,ensemble_forecast_data,deterministic_forecast_data,Missing_date_window, rfc_forecast_date_window ){
-  
-  
+
+
   # Creates historical groundwater levels for figures
-  
-  temp_WL_states<- Time_series_data %>%
+
+  temp_WL_states <- Time_series_data %>%
     mutate(days_in_year = yday(Date)) %>%
-    #filter(Date <= as.Date("2023-12-31"))%>%
-    group_by(days_in_year, Well)%>%
+    #filter(Date <= as.Date("2023-12-31")) %>%
+    group_by(days_in_year, Well) %>%
     drop_na(groundwater) %>%
-    summarise(Min = min(groundwater), 
+    summarise(Min = min(groundwater),
               per5th = quantile(groundwater, 0.05),
               per10th = quantile(groundwater, 0.1),
               per25th = quantile(groundwater, 0.25),
@@ -18,101 +18,104 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores, figure_lo
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
     mutate(fake_date = as.Date("2020-01-01")+days_in_year)
-  
-  
+
+
   Waterlevel_adjustments <- Time_series_data %>%
-    filter(year(Date) != year(Sys.Date()))%>%
+    filter(year(Date) != year(Sys.Date())) %>%
     group_by(Well) %>%
     summarise(groundwater_period_average = mean(groundwater_period_average, na.rm = TRUE)) %>%
-    ungroup() 
-  
+    ungroup()
+
   # register number of Parallel cores to utilize
-  
-  registerDoParallel(cores = num_cores) 
-  
+
+  registerDoParallel(cores = num_cores)
+
   # Creates a list of Wells from the available data
-  pgown_well_info_temp <- pgown_well_info 
-  
-    
+  pgown_well_info_temp <- pgown_well_info
+
+
   #  filter(Snow_influenced == 0)
-  
-  
+
+
   pgown_well_info_temp2 <- pgown_well_info %>%
     dplyr::select(Well,Regional_group)
-  
+
   last_measurements <- Time_series_data %>%
     group_by(Well) %>%
-    drop_na(groundwater)%>%
+    drop_na(groundwater) %>%
     summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
     ungroup()
-  
+
   last_measurements <- left_join(pgown_well_info_temp2,last_measurements)
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
   Well_list <- as.list(unique(pgown_well_info_temp$Well))
-  
+
   # Pre-allocate a list to store the results
   simulated_data <- vector("list", length(Well_list))
-  
-  
-  #run calculations for each well in parellel
-  
-  simulated_data <- foreach(y = Well_list, .combine = rbind, 
+
+
+  #run calculations for each well in parallel
+
+  simulated_data <- foreach(y = Well_list, .combine = rbind,
                             .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv", "randomForest","zoo","ggnewscale","grid", "cowplot","nnet","magick")) %dopar% {
-                               # filter data by well      
-#y= "OW002"
-last_measurements_well <- last_measurements %>%
+                               # filter data by well
+                              #y= "OW459"
+                              #y= "OW002"
+                              # y = Well_list[1]
+  last_measurements_well <- last_measurements %>%
      filter(Well == y) %>%
      pull(last_measurements)
-   if(between(last_measurements_well, Sys.Date() - Missing_date_window, Sys.Date())) {
-     
+
+   if (between(last_measurements_well, Sys.Date() - Missing_date_window, Sys.Date())) {
+
 
     temp <- Time_series_data %>%
-      filter(Well == y) 
-    
-    
+      filter(Well == y)
+
+
     temp_WL_states_temp <- temp_WL_states %>%
       filter(Well == y)
-    
+
     pgown_well_info_Well_info <- pgown_well_info_temp%>%
       filter(Well == y)
-    
+
     #groundwater level adjustment to actual DTW
-    
+
     Waterlevel_adjustments_temp <- Waterlevel_adjustments %>%
       filter(Well == y)
-    
+
     Waterlevel_adjustments_temp<- Waterlevel_adjustments_temp$groundwater_period_average
-    
-    # extract well leg time 
+
+    # extract well leg time
     lag_period <- pgown_well_info_Well_info %>%
       pull(Lag_time)
-    
+
     a_coeff <- pgown_well_info_Well_info %>%
       pull(DWC_Precip)
-    
-    
-    
+
+
+
     a_coeff_snow <- pgown_well_info_Well_info %>%
       pull(DWC_Snow)
-    
+
     ann_size <- pgown_well_info_Well_info %>%
-      pull(ann_size)  
-    
+      pull(ann_size)
+
     ann_decay<- pgown_well_info_Well_info %>%
       pull(ann_decay)
-    
+
     ann_maxit <- pgown_well_info_Well_info %>%
       pull(ann_maxit)
-    
+
     # Function to classify performance based on R² and NRMSE
     classify_performance <- function(r2, nrmse) {
       if (r2 >= 0.8 & nrmse <= 0.15) {
@@ -123,7 +126,7 @@ last_measurements_well <- last_measurements %>%
         return("Poor")
       }
     }
-    
+
     # Function to classify forecast results based on RSR
     classify_forecast_results <- function(rsr) {
       if (rsr < 1) {
@@ -132,7 +135,7 @@ last_measurements_well <- last_measurements %>%
         return(", Forecast more sensitive to future climate")
       }
     }
-    
+
     # Assign categories for each forecast period
     well_lag_time_2 <- pgown_well_info_Well_info %>%
       rowwise() %>%
@@ -154,40 +157,40 @@ last_measurements_well <- last_measurements %>%
       ) %>%
       dplyr::select(Well, comb_perf_value_14, comb_perf_value_30, comb_perf_value_60, comb_perf_value_90) %>%
       gather(key = "per_name", value = "performance", comb_perf_value_14, comb_perf_value_30, comb_perf_value_60, comb_perf_value_90) %>%
-      mutate(lag_day = ifelse(per_name == "comb_perf_value_14", 14, 
+      mutate(lag_day = ifelse(per_name == "comb_perf_value_14", 14,
                               ifelse(per_name == "comb_perf_value_30", 30,
                                      ifelse(per_name == "comb_perf_value_60", 60,
                                             ifelse(per_name == "comb_perf_value_90", 90,NA))))) %>%
       dplyr::select(Well, lag_day,performance)
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     deterministic_forecast_data_y <- deterministic_forecast_data %>%
       filter(Well == y) %>%
       dplyr::rename(total_precip = PP, mean_temp = TA) %>%
-      mutate(FC_type = 1)%>%
-      mutate(Date = as.Date(Date))%>%
+      mutate(FC_type = 1) %>%
+      mutate(Date = as.Date(Date)) %>%
       dplyr::select(Well, Date, total_precip, mean_temp, FC_type )
-    
+
     ensemble_forecast_data_y <- ensemble_forecast_data %>%
       filter(Well == y) %>%
       dplyr::rename(total_precip = PP, mean_temp = TA, en_sim = simulation) %>%
       mutate(FC_type = 2) %>%
       dplyr::select(Well, Date, total_precip, mean_temp, en_sim,FC_type )
-    
+
     max_ensemble <- max(ensemble_forecast_data_y$en_sim)
-    
-    
+
+
     deterministic_forecast_data_y_prediction_date <- deterministic_forecast_data_y %>%
       ungroup() %>%
       summarise(last_measurements= min(Date, na.rm = TRUE)) %>%
       ungroup() %>%
         pull(last_measurements)
-    
+
       ensemble_forecast_data_y_prediction_date <- ensemble_forecast_data_y %>%
         ungroup() %>%
       summarise(last_measurements= min(Date, na.rm = TRUE)) %>%
@@ -195,13 +198,14 @@ last_measurements_well <- last_measurements %>%
         pull(last_measurements)
 
 
-    #create empty data frame to put data    
+    #create empty data frame to put data
     Time_series_data_2 <- data.frame()
     # RAIN INFLUENCED ----------------------------------------------------------
     if (unique(pgown_well_info_Well_info$Snow_influenced == 0)) {
       plot_type <- "rain"
       #run for predicted forcast intervals (i.e 14,30,60 and 90 days)
         for(x in forecast_days){
+        #  x = 90
         #summarise leading and lagging variables
 
       # Preprocess temp
@@ -229,34 +233,34 @@ last_measurements_well <- last_measurements %>%
           lag_day,
           days_in_year,
           year,
-          groundwater, 
-          groundwater_predict, 
+          groundwater,
+          groundwater_predict,
           actual_predicted_groundwater,
-          mean_temp_lag, 
-          mean_temp_lead,  
+          mean_temp_lag,
+          mean_temp_lead,
           groundwater_diff,
-          precipitation_lag, 
-          precip_lead, 
+          precipitation_lag,
+          precip_lead,
           SWE,
           SWE_lag_diff,
           SWE_lead_diff
         )
-      
-      
-      
-      
+
+
+
+
       calculate_weighted_lead <- function(i, x, lag_period, a_coeff) {
-        
+
         temp %>%
-          
+
           mutate(lag_day = x, #forcast interval
                  Date_predicted = lead(Date,x)
                 ) %>%
-          mutate(lag_day_adjusted = (x-lag_period))%>%
-          mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-          mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-          mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-          mutate(weighted_lead = lead(total_precip,i)*normal_weight)%>%
+          mutate(lag_day_adjusted = (x-lag_period)) %>%
+          mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+          mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+          mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+          mutate(weighted_lead = lead(total_precip,i)*normal_weight) %>%
           dplyr::select( # only select variables of interest remove others
             Date,
             Date_predicted,
@@ -265,13 +269,13 @@ last_measurements_well <- last_measurements %>%
             lag_day_adjusted,
             weighted_lead
           )
-        
+
 
       }
-      
+
       lead_data <- map_dfr(1:x, calculate_weighted_lead, x = x, lag_period = lag_period, a_coeff = a_coeff)
-      
-      
+
+
       lead_data <-   lead_data %>%
         group_by(# only select variables of interest remove others
           Date,
@@ -279,27 +283,27 @@ last_measurements_well <- last_measurements %>%
           Well,
           lag_day
         ) %>%
-        summarise(weighted_lead = mean(weighted_lead, na.rm = TRUE))%>%
-        ungroup() 
-      
-      
-      
+        summarise(weighted_lead = mean(weighted_lead, na.rm = TRUE)) %>%
+        ungroup()
+
+
+
       lag_data <- data.frame()
-      
-      lag_period_length = lag_period*3
-      
+
+      lag_period_length = lag_period * 3
+
       calculate_weighted_lag <- function(i, lag_period, a_coeff) {
 
         temp %>%
-         
+
           mutate(lag_day = x, #forcast interval
                  Date_predicted = lead(Date,x)
                       ) %>%
-          mutate(lag_day_adjusted = lag_period -x)%>%
-          mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-          mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-          mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-          mutate(weighted_lag = lag(total_precip,i)*normal_weight)%>%
+          mutate(lag_day_adjusted = lag_period -x) %>%
+          mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+          mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+          mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+          mutate(weighted_lag = lag(total_precip,i)*normal_weight) %>%
           dplyr::select( # only select variables of interest remove others
             Date,
             Date_predicted,
@@ -308,15 +312,15 @@ last_measurements_well <- last_measurements %>%
             lag_day_adjusted,
             weighted_lag
           )
-        
+
 
       }
-      
-      
+
+
       lag_data <- map_dfr(1:(lag_period * 3), calculate_weighted_lag, lag_period = lag_period, a_coeff = a_coeff)
-      
-      
-      
+
+
+
       lag_data <-   lag_data %>%
         group_by(# only select variables of interest remove others
           Date,
@@ -324,18 +328,18 @@ last_measurements_well <- last_measurements %>%
           Well,
           lag_day
         ) %>%
-        summarise(weighted_lag = mean(weighted_lag, na.rm = TRUE))%>%
-        ungroup() 
-      
+        summarise(weighted_lag = mean(weighted_lag, na.rm = TRUE)) %>%
+        ungroup()
+
       lead_data_lag <- full_join(lead_data, lag_data)
-      
+
       temp2 <- full_join(temp2,lead_data_lag)
-      
+
       temp2 <- temp2 %>%
         mutate(precip_lead_org = precip_lead,
                precipitation_lag_org = precipitation_lag,
                precip_lead = weighted_lead,
-               precipitation_lag = weighted_lag)%>%
+               precipitation_lag = weighted_lag) %>%
         mutate(max_precip_lead = max(precip_lead, na.rm = TRUE),
                min_precip_lead = min(precip_lead, na.rm = TRUE),
                max_precipitation_lag = max(precipitation_lag, na.rm = TRUE),
@@ -354,30 +358,30 @@ last_measurements_well <- last_measurements %>%
                mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
                mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
                groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-               actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater), 
+               actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
                groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
                groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff)
-        ) 
-     
-      
+        )
+
+
       temp2_original <- temp2
-      
-          
-      
-        
-        
+
+
+
+
+
         model_file <- paste0(model_path,"ANN_Model_",y,"_",x,".Rdata")
         load(model_file)
-        
+
            # Calculate the mean and standard deviation of the variables by day
-        # need to use raw precip data 
-        
-        
-        
-        daily_stats<- temp2_original %>%
+        # need to use raw precip data
+
+
+
+        daily_stats <- temp2_original %>%
           mutate(
             mean_temp_lead = mean_temp_lead*(max_mean_temp_lead - min_mean_temp_lead) + min_mean_temp_lead#,
-          )%>%
+          ) %>%
           group_by(days_in_year) %>%
           summarise(
             precip_lead_mean = mean(precip_lead_org, na.rm = TRUE),
@@ -385,77 +389,77 @@ last_measurements_well <- last_measurements %>%
             mean_temp_lead_mean = mean(mean_temp_lead, na.rm = TRUE),
             mean_temp_lead_sd = sd(mean_temp_lead, na.rm = TRUE)
                 )
-        
-        
+
+
         # Generate Monte Carlo values for each day
         monte_carlo_df <- daily_stats %>%
           tidyr::uncount(500) %>%
           mutate(
             precip_lead = rnorm(n(), mean = precip_lead_mean, sd = precip_lead_sd),
             mean_temp_lead = rnorm(n(), mean = mean_temp_lead_mean, sd = mean_temp_lead_sd)
-          ) 
-        
+          )
+
         monte_carlo_df <- monte_carlo_df %>%
           dplyr::select(days_in_year, precip_lead, mean_temp_lead) %>%
-          mutate(precip_lead = precip_lead/x, mean_temp_lead = mean_temp_lead) 
-        
-        
-        last_date <- temp2_original%>%
-          drop_na(groundwater)%>%
+          mutate(precip_lead = precip_lead/x, mean_temp_lead = mean_temp_lead)
+
+
+        last_date <- temp2_original %>%
+          drop_na(groundwater) %>%
           summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
           pull(last_measurements)
-        
-        
-        last_date_days_in_year  <- yday(last_date+x)
-        
-        Prediction_date <- last_date+x
+
+
+        last_date_days_in_year  <- yday(last_date + x)
+
+        Prediction_date <- last_date + x
         monte_carlo_df <- monte_carlo_df %>%
-          filter(days_in_year == last_date_days_in_year)%>%
+          filter(days_in_year == last_date_days_in_year) %>%
           mutate(sim_num = row_number()) %>%
           mutate(joiner = 1) %>%
           dplyr::select(sim_num, joiner, precip_lead, mean_temp_lead)
         # Join the new data frame with the original one
-        
-        
+
+
         #forcasted_data
 
         temp_forcast <- data.frame()
         for(p in 1:x){
-          # p = 1 
+          # p = 1
           temp_fc <- data.frame(
             Well = unlist(y),
             Date = as.Date(last_date+p),
             Snow_influenced =  unique(temp$Snow_influenced),
             groundwater_period_average = unique(temp$groundwater_period_average)
-          ) 
-          
+          )
+
           temp_fc <- temp_fc %>%
             mutate(days_in_year = yday(Date))
           temp_forcast <- rbind(temp_forcast,temp_fc)
         }
-        
+
         temp_forcast4 <- data.frame()
         #Sys.Date() - ensemble_forecast_data_y_prediction_date <= rfc_forecast_date_window
-        if(Sys.Date() - ensemble_forecast_data_y_prediction_date <= rfc_forecast_date_window){# ensemble  
+        if(Sys.Date() - ensemble_forecast_data_y_prediction_date <= rfc_forecast_date_window){# ensemble
           for(g in 1:max_ensemble){
             ensemble_forecast_data_z <- ensemble_forecast_data_y %>%
               filter(en_sim == g)
-            
+
             if(Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window ){# no deterministic but ensemble
-              
-              
+
+
               temp_forcast2 <- full_join(deterministic_forecast_data_y,ensemble_forecast_data_z)
             } else {
-              
-              temp_forcast2 <- ensemble_forecast_data_z  
+
+              temp_forcast2 <- ensemble_forecast_data_z
             }
-            
+
             temp_forcast2_2 <- temp_forcast2 %>%
               dplyr::select(-en_sim) %>%
               mutate(days_in_year = yday(Date+x))
             temp_forcast3 <- full_join(temp_forcast,temp_forcast2_2 )
-            
-            
+
+
             temp_forcast3_2  <- temp_forcast3 %>%
               mutate(joiner = 1) %>%
               full_join(monte_carlo_df) %>%
@@ -463,38 +467,38 @@ last_measurements_well <- last_measurements %>%
                      mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
               mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
               group_by(Well, Date) %>%
-              mutate(min_FC = min(FC_type))%>%
-              filter(min_FC == FC_type)%>%
-              ungroup()%>%
+              mutate(min_FC = min(FC_type)) %>%
+              filter(min_FC == FC_type) %>%
+              ungroup() %>%
               mutate(lag_day_adjusted = (lag_period)) %>%
               group_by(sim_num) %>%
               arrange(Date) %>%
               mutate(lead_num = row_number()) %>%
-              ungroup()%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
+              ungroup() %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
               mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
               mutate(total_precip = total_precip*normal_weight) %>%
               filter(Date >= last_date & Date <= Prediction_date) %>%
-              group_by(sim_num, Well)%>%
+              group_by(sim_num, Well) %>%
               summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                         mean_temp_lead = mean(mean_temp, na.rm = TRUE)) %>%
               mutate(en_sim = g) %>%
-              ungroup() 
-            
+              ungroup()
+
             temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
           }
         } else {
-          
+
          # Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window
           if(Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window ){# deterministic and no ensemble
-          
-            
-            
+
+
+
               temp_forcast2_2 <- deterministic_forecast_data_y %>%
               mutate(days_in_year = yday(Date+x))
             temp_forcast3 <- full_join(temp_forcast,temp_forcast2_2 )
-            
+
             temp_forcast3_2  <- temp_forcast3 %>%
               mutate(joiner = 1) %>%
               full_join(monte_carlo_df) %>%
@@ -502,28 +506,28 @@ last_measurements_well <- last_measurements %>%
                      mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
               mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
               group_by(Well, Date) %>%
-              mutate(min_FC = min(FC_type))%>%
-              filter(min_FC == FC_type)%>%
-              ungroup()%>%
+              mutate(min_FC = min(FC_type)) %>%
+              filter(min_FC == FC_type) %>%
+              ungroup() %>%
               mutate(lag_day_adjusted = (lag_period)) %>%
               group_by(sim_num) %>%
               arrange(Date) %>%
               mutate(lead_num = row_number()) %>%
-              ungroup()%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
+              ungroup() %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
               mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
               mutate(total_precip = total_precip*normal_weight) %>%
               filter(Date >= last_date & Date <= Prediction_date) %>%
-              group_by(sim_num, Well)%>%
+              group_by(sim_num, Well) %>%
               summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                         mean_temp_lead = mean(mean_temp, na.rm = TRUE)) %>%
               mutate(en_sim = 1) %>%
-              ungroup() 
-            
+              ungroup()
+
             temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
           }else{  # no deterministic and no ensemble
-            
+
             temp_forcast3_2  <- temp_forcast %>%
               mutate(joiner = 1) %>%
               full_join(monte_carlo_df) %>%
@@ -531,59 +535,60 @@ last_measurements_well <- last_measurements %>%
                      mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
               mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
               group_by(Well, Date) %>%
-              mutate(min_FC = min(FC_type))%>%
-              filter(min_FC == FC_type)%>%
-              ungroup()%>%
+              mutate(min_FC = min(FC_type)) %>%
+              filter(min_FC == FC_type) %>%
+              ungroup() %>%
               mutate(lag_day_adjusted = (lag_period)) %>%
               group_by(sim_num) %>%
               arrange(Date) %>%
               mutate(lead_num = row_number()) %>%
-              ungroup()%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
+              ungroup() %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
               mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
               mutate(total_precip = total_precip*normal_weight) %>%
               filter(Date >= last_date & Date <= Prediction_date) %>%
-              group_by(sim_num, Well)%>%
+              group_by(sim_num, Well) %>%
               summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                         mean_temp_lead = mean(mean_temp, na.rm = TRUE)) %>%
               mutate(en_sim = 1) %>%
-              ungroup() 
-            
+              ungroup()
+
             temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
-            
-            
+
+
           }
-          
-          
+
+
         }
-        
+
         temp_forcast4 <- temp_forcast4 %>%
           mutate(joiner = 1)
-        
-        
-        
+
+
+
         temp2_pred <- temp2 %>%
-          filter(Date ==last_date)%>%
-          dplyr::select(Date, Well,groundwater,groundwater_diff, precipitation_lag, mean_temp_lag,
-                        max_groundwater, min_groundwater, max_groundwater_diff, min_groundwater_diff, 
-                        min_mean_temp_lead, max_mean_temp_lead, max_precip_lead, min_precip_lead) %>%
+          filter(Date == last_date) %>%
+          dplyr::select(Date, Well, groundwater, groundwater_diff, precipitation_lag,
+                        mean_temp_lag, max_groundwater, min_groundwater,
+                        max_groundwater_diff, min_groundwater_diff, min_mean_temp_lead,
+                        max_mean_temp_lead, max_precip_lead, min_precip_lead) %>%
           mutate(joiner = 1) %>%
-          mutate(Date_predicted = Date+x) %>%
+          mutate(Date_predicted = Date + x) %>%
           full_join(temp_forcast4) %>%
           mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
                  mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead))
-        
-      
+
+
         # Filter the DataFrame by the last date -- and combine with percentiles
-        temp2_pred2 <- temp2_pred 
-          
-         
+        temp2_pred2 <- temp2_pred
+
+
            predicted_response_ANN <- predict(fit_ann, newdata = temp2_pred2)
            temp2_pred2 <- cbind(temp2_pred2, predicted_response_ANN)
-          
-          
-          
+
+
+
           #Combine data
           temp2_pred2 <- temp2_pred2 %>%
             dplyr::rename(
@@ -591,29 +596,31 @@ last_measurements_well <- last_measurements %>%
             ) %>%
             gather(c(
                      ANN), key = "Model", value = predicted_value)
-          
+
           temp2_pred2 <- temp2_pred2 %>%
             mutate(predicted_value = predicted_value*(max_groundwater_diff - min_groundwater_diff) + min_groundwater_diff,
-                   groundwater = groundwater*(max_groundwater - min_groundwater) + min_groundwater)%>%
+                   groundwater = groundwater*(max_groundwater - min_groundwater) + min_groundwater) %>%
             mutate(predicted_value = groundwater + predicted_value) %>%
             mutate(lag_day = x)
-          
-          
-          Time_series_data_2 <- rbind(Time_series_data_2, temp2_pred2)
-          
-          
-        }
-        
 
-    }else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
+
+          Time_series_data_2 <- rbind(Time_series_data_2, temp2_pred2)
+
+
+        }
+
+
+    } else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {
+
+      # SNOW INFLUENCED ----------------------------------------------------------
       plot_type <- "snow"
-      
+
       #run for predicted forcast intervals (i.e 14,30,60 and 90 days)
         for(x in forecast_days){
 
 
 #x = 90
-          
+
           temp2 <- temp %>%
             mutate(lag_day = x, #forcast interval
                    Date_predicted = lead(Date,x),
@@ -639,24 +646,24 @@ last_measurements_well <- last_measurements %>%
               lag_day,
               days_in_year,
               year,
-              groundwater, 
-              groundwater_predict, 
+              groundwater,
+              groundwater_predict,
               groundwater_diff,
               actual_predicted_groundwater,
-              mean_temp_lag, 
-              mean_temp_lead,  
-              precipitation_lag, 
-              precip_lead, 
+              mean_temp_lag,
+              mean_temp_lead,
+              precipitation_lag,
+              precip_lead,
               SWE,
               SWE_lag_diff,
               SWE_lead_diff#,
               #max_groundwater,
               #min_groundwater
             )
-          
-          
-          
-          
+
+
+
+
           calculate_weighted_lead <- function(i,x, lag_period, a_coeff) {
 
             temp %>%
@@ -667,17 +674,17 @@ last_measurements_well <- last_measurements %>%
               ) %>%
               mutate(
                 SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
-                SWE_lead_diff =  SWE_lead - SWE)%>%
-              mutate(lag_day_adjusted = (x- lag_period))%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-              mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow))%>%
-              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow ))%>%
-              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0))%>%
+                SWE_lead_diff =  SWE_lead - SWE) %>%
+              mutate(lag_day_adjusted = (x- lag_period)) %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
+              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
+              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
               mutate(weighted_lead = lead(total_precip,i)*normal_weight,
                      weighted_lead_temp = lead(mean_temp,i)*normal_weight2,
-                     weighted_lead_SWE = lead(SWE_lead_diff,i)*normal_weight2)%>%
+                     weighted_lead_SWE = lead(SWE_lead_diff,i)*normal_weight2) %>%
               dplyr::select( # only select variables of interest remove others
                 Date,
                 Date_predicted,
@@ -687,12 +694,12 @@ last_measurements_well <- last_measurements %>%
                 weighted_lead,
                 weighted_lead_SWE,
                 weighted_lead_temp)
-            
-            
+
+
           }
-          
-          lead_data <- map_dfr(1:x, calculate_weighted_lead, x= x, lag_period = lag_period, a_coeff = a_coeff)
-          
+
+          lead_data <- map_dfr(1:x, calculate_weighted_lead, x = x, lag_period = lag_period, a_coeff = a_coeff)
+
           lead_data <-   lead_data %>%
             group_by(# only select variables of interest remove others
               Date,
@@ -702,17 +709,17 @@ last_measurements_well <- last_measurements %>%
             ) %>%
             summarise(weighted_lead = mean(weighted_lead, na.rm = TRUE),
                       weighted_lead_SWE = mean(weighted_lead_SWE, na.rm = TRUE),
-                      weighted_lead_temp = mean(weighted_lead_temp, na.rm = TRUE))%>%
-            ungroup() 
-          
-          
-          
-          
-          lag_period_length = lag_period*3
-          
+                      weighted_lead_temp = mean(weighted_lead_temp, na.rm = TRUE)) %>%
+            ungroup()
+
+
+
+
+          lag_period_length = lag_period * 3
+
           calculate_weighted_lag <- function(i, lag_period, a_coeff) {
             #i = 5
-            
+
             temp %>%
               mutate(lag_day = x, #forcast interval
                      Date_predicted = lead(Date,x),
@@ -721,17 +728,17 @@ last_measurements_well <- last_measurements %>%
                                  ) %>%
               mutate(
                 SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
-                SWE_lead_diff =  SWE_lead - SWE)%>%
-              mutate(lag_day_adjusted = lag_period -x)%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow))%>%
-              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow ))%>%
-              mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0))%>%
+                SWE_lead_diff =  SWE_lead - SWE) %>%
+              mutate(lag_day_adjusted = lag_period -x) %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
+              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
+              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
               mutate(weighted_lag = lag(total_precip,i)*normal_weight,
                      weighted_lag_temp = lag(mean_temp,i)*normal_weight2,
-                     weighted_lag_SWE = lag(SWE_lead_diff,i)*normal_weight2)%>%
+                     weighted_lag_SWE = lag(SWE_lead_diff,i)*normal_weight2) %>%
               dplyr::select( # only select variables of interest remove others
                 Date,
                 Date_predicted,
@@ -742,13 +749,13 @@ last_measurements_well <- last_measurements %>%
                 weighted_lag_SWE,
                 weighted_lag_temp
               )
-            
-            
+
+
           }
-          
-          
+
+
           lag_data <- map_dfr(1:(lag_period * 3), calculate_weighted_lag, lag_period = lag_period, a_coeff = a_coeff)
-          
+
           lag_data <-   lag_data %>%
             group_by(# only select variables of interest remove others
               Date,
@@ -759,13 +766,13 @@ last_measurements_well <- last_measurements %>%
             summarise(weighted_lag = mean(weighted_lag, na.rm = TRUE),
                       weighted_lag_SWE = mean(weighted_lag_SWE, na.rm = TRUE),
                       weighted_lag_temp = mean(weighted_lag_temp, na.rm = TRUE)
-            )%>%
-            ungroup() 
-          
+            ) %>%
+            ungroup()
+
           lead_data_lag <- full_join(lead_data, lag_data)
-          
+
           temp2 <- full_join(temp2,lead_data_lag)
-          
+
           temp2 <- temp2 %>%
             mutate(precip_lead_org = precip_lead,
                    precipitation_lag_org = precipitation_lag,
@@ -802,31 +809,31 @@ last_measurements_well <- last_measurements %>%
                    mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
                    mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
                    groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater), 
+                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
                    groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
                    groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff))
-          
-          
-          
-          
-          temp2_original <- temp2
-          
-        
-        
-        
-        model_file <- paste0(model_path,"ANN_Model_",y,"_",x,".Rdata")
-        load(model_file)
-        
 
-        
+
+
+
+          temp2_original <- temp2
+
+
+
+
+        model_file <- paste0(model_path, "ANN_Model_", y, "_", x, ".Rdata")
+        load(model_file)
+
+
+
         # Calculate the mean and standard deviation of the variables by day
-      
-          
-          
+
+
+
           daily_stats<- temp2_original %>%
             mutate(
               mean_temp_lead = mean_temp_lead*(max_mean_temp_lead - min_mean_temp_lead) + min_mean_temp_lead#,
-            )%>%
+            ) %>%
             group_by(days_in_year) %>%
             summarise(
               precip_lead_mean = mean(precip_lead_org, na.rm = TRUE),
@@ -836,8 +843,8 @@ last_measurements_well <- last_measurements %>%
               SWE_lead_diff_mean = mean(SWE_lead_diff_org, na.rm = TRUE),
               SWE_lead_diff_sd = sd(SWE_lead_diff_org, na.rm = TRUE)
             )
-          
-          
+
+
           # Generate Monte Carlo values for each day
           monte_carlo_df <- daily_stats %>%
             tidyr::uncount(500) %>%
@@ -845,80 +852,80 @@ last_measurements_well <- last_measurements %>%
               precip_lead = rnorm(n(), mean = precip_lead_mean, sd = precip_lead_sd),
               mean_temp_lead = rnorm(n(), mean = mean_temp_lead_mean, sd = mean_temp_lead_sd),
               SWE_lead_diff = rnorm(n(), mean = SWE_lead_diff_mean, sd = SWE_lead_diff_sd)
-              ) 
-          
+              )
+
           monte_carlo_df <- monte_carlo_df %>%
             dplyr::select(days_in_year, precip_lead, mean_temp_lead,SWE_lead_diff) %>%
-            mutate(precip_lead = precip_lead/x, 
+            mutate(precip_lead = precip_lead/x,
                    mean_temp_lead = mean_temp_lead,
-                   SWE_lead_diff = SWE_lead_diff/x) 
-          
-          
+                   SWE_lead_diff = SWE_lead_diff/x)
+
+
           last_date <- temp2_original%>%
-          drop_na(groundwater)%>%
+          drop_na(groundwater) %>%
             summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
             pull(last_measurements)
-          
+
 
           last_date_days_in_year  <- yday(last_date+x)
-          
+
           Prediction_date <- last_date+x
-          
+
           monte_carlo_df <- monte_carlo_df %>%
-            filter(days_in_year == last_date_days_in_year)%>%
+            filter(days_in_year == last_date_days_in_year) %>%
             mutate(sim_num = row_number()) %>%
             mutate(joiner = 1) %>%
             dplyr::select(sim_num, joiner, precip_lead, mean_temp_lead,SWE_lead_diff)
-          
-          
+
+
           temp_forcast <- data.frame()
-          
+
           for(p in 1:x){
-            
-            
+
+
             temp_fc <- data.frame(
               Well = y,
               Date = as.Date(last_date+p),
               Snow_influenced =  unique(temp$Snow_influenced),
               groundwater_period_average = unique(temp$groundwater_period_average)
-            ) 
-            
-            
-            
+            )
+
+
+
             temp_fc <- temp_fc %>%
               mutate(days_in_year = yday(Date+x))
-            
+
             temp_forcast <- rbind(temp_forcast,temp_fc)
-            
+
           }
-          
-          
-          
-          
+
+
+
+
           temp_forcast4 <- data.frame()
-          if(Sys.Date() - ensemble_forecast_data_y_prediction_date <= rfc_forecast_date_window){# ensemble  
-            
+          if(Sys.Date() - ensemble_forecast_data_y_prediction_date <= rfc_forecast_date_window){# ensemble
+
           for(g in 1:max_ensemble){
 
-            
+
             ensemble_forecast_data_z <- ensemble_forecast_data_y %>%
               filter(en_sim == g)
-            
+
             if(Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window ){# no deterministic but ensemble
-              
+
             temp_forcast2 <- full_join(deterministic_forecast_data_y,ensemble_forecast_data_z)
             } else {
-              temp_forcast2 <- ensemble_forecast_data_z  
+              temp_forcast2 <- ensemble_forecast_data_z
             }
-            
+
             temp_forcast2_2 <- temp_forcast2 %>%
               dplyr::select(-en_sim) %>%
               mutate(days_in_year = yday(Date+x))
-            
+
             temp_forcast3 <- full_join(temp_forcast,temp_forcast2_2 )
-            
-            
-            
+
+
+
             temp_forcast3_2  <- temp_forcast3 %>%
               mutate(joiner = 1) %>%
               full_join(monte_carlo_df) %>%
@@ -926,43 +933,43 @@ last_measurements_well <- last_measurements %>%
                      mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
               mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
               group_by(Well, Date) %>%
-              mutate(min_FC = min(FC_type))%>%
-              filter(min_FC == FC_type)%>%
-              ungroup()%>%
+              mutate(min_FC = min(FC_type)) %>%
+              filter(min_FC == FC_type) %>%
+              ungroup() %>%
               mutate(lag_day_adjusted = (lag_period)) %>%
               group_by(sim_num) %>%
               arrange(Date) %>%
               mutate(lead_num = row_number()) %>%
-              ungroup()%>%
-              mutate(lag_day_adjusted = (x- lag_period))%>%
-              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-              mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-              mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow))%>%
-              mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow ))%>%
-              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0))%>%
+              ungroup() %>%
+              mutate(lag_day_adjusted = (x- lag_period)) %>%
+              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+              mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
+              mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
+              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
               mutate(total_precip = total_precip*normal_weight) %>%
                 mutate(mean_temp = mean_temp*normal_weight2) %>%
-                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2)%>%
+                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
               filter(Date >= last_date & Date <= Prediction_date) %>%
-              group_by(sim_num, Well)%>%
+              group_by(sim_num, Well) %>%
               summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                         mean_temp_lead = mean(mean_temp, na.rm = TRUE),
                         SWE_lead_diff = mean(SWE_lead_diff, na.rm = TRUE)) %>%
               mutate(en_sim = g) %>%
-              ungroup() 
-            
-            
-            
+              ungroup()
+
+
+
             temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
           }
-          }else{
+          } else {
             if(Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window ){# deterministic and no ensemble
               temp_forcast2_2 <- deterministic_forecast_data_y %>%
                 mutate(days_in_year = yday(Date+x))
               temp_forcast3 <- full_join(temp_forcast,temp_forcast2_2 )
-              
-              
+
+
               temp_forcast3_2  <- temp_forcast3 %>%
                 mutate(joiner = 1) %>%
                 full_join(monte_carlo_df) %>%
@@ -970,38 +977,38 @@ last_measurements_well <- last_measurements %>%
                        mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
                 mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
                 group_by(Well, Date) %>%
-                mutate(min_FC = min(FC_type))%>%
-                filter(min_FC == FC_type)%>%
-                ungroup()%>%
+                mutate(min_FC = min(FC_type)) %>%
+                filter(min_FC == FC_type) %>%
+                ungroup() %>%
                 mutate(lag_day_adjusted = (lag_period)) %>%
                 group_by(sim_num) %>%
                 arrange(Date) %>%
                 mutate(lead_num = row_number()) %>%
-                ungroup()%>%
-                mutate(lag_day_adjusted = (x- lag_period))%>%
-                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-                mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow))%>%
-                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow ))%>%
-                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0))%>%
+                ungroup() %>%
+                mutate(lag_day_adjusted = (x- lag_period)) %>%
+                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
+                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
+                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
                 mutate(total_precip = total_precip*normal_weight) %>%
                 mutate(mean_temp = mean_temp*normal_weight2) %>%
-                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2)%>%
+                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
                 filter(Date >= last_date & Date <= Prediction_date) %>%
-                group_by(sim_num, Well)%>%
+                group_by(sim_num, Well) %>%
                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                           mean_temp_lead = mean(mean_temp, na.rm = TRUE),
                           SWE_lead_diff = mean(SWE_lead_diff, na.rm = TRUE)) %>%
                 mutate(en_sim = 1) %>%
-                ungroup() 
-              
+                ungroup()
+
               temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
-              
-              
-            }else{
-                
-              
+
+
+            } else {
+
+
               temp_forcast3_2  <- temp_forcast %>%
                 mutate(joiner = 1) %>%
                 full_join(monte_carlo_df) %>%
@@ -1009,51 +1016,51 @@ last_measurements_well <- last_measurements %>%
                        mean_temp = ifelse(is.na(FC_type), mean_temp_lead, mean_temp)) %>%
                 mutate(FC_type = ifelse(is.na(FC_type), 3, FC_type)) %>%
                 group_by(Well, Date) %>%
-                mutate(min_FC = min(FC_type))%>%
-                filter(min_FC == FC_type)%>%
-                ungroup()%>%
+                mutate(min_FC = min(FC_type)) %>%
+                filter(min_FC == FC_type) %>%
+                ungroup() %>%
                 mutate(lag_day_adjusted = (lag_period)) %>%
                 group_by(sim_num) %>%
                 arrange(Date) %>%
                 mutate(lead_num = row_number()) %>%
-                ungroup()%>%
-                mutate(lag_day_adjusted = (x- lag_period))%>%
-                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff))%>%
-                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff ))%>%
-                mutate(normal_weight = (normal_weight - 0)/(weight_max-0))%>%
-                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow))%>%
-                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow ))%>%
-                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0))%>%
+                ungroup() %>%
+                mutate(lag_day_adjusted = (x- lag_period)) %>%
+                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
+                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
+                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
+                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
+                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
+                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
                 mutate(total_precip = total_precip*normal_weight) %>%
                 mutate(mean_temp = mean_temp*normal_weight2) %>%
-                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2)%>%
+                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
                 filter(Date >= last_date & Date <= Prediction_date) %>%
-                group_by(sim_num, Well)%>%
+                group_by(sim_num, Well) %>%
                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
                           mean_temp_lead = mean(mean_temp, na.rm = TRUE),
                           SWE_lead_diff = mean(SWE_lead_diff, na.rm = TRUE)) %>%
                 mutate(en_sim = 1) %>%
-                ungroup() 
+                ungroup()
               temp_forcast4 <- rbind(temp_forcast4,temp_forcast3_2)
-              
-              
+
+
               }
-              
-              
-            
+
+
+
           }
-          
-          
+
+
           temp_forcast4 <- temp_forcast4 %>%
             mutate(joiner = 1)
-          
-          
-          
+
+
+
           temp2_pred <- temp2 %>%
-            filter(Date ==last_date)%>%
+            filter(Date ==last_date) %>%
             dplyr::select(Date, Well,groundwater,groundwater_diff, precipitation_lag, mean_temp_lag,
-                          max_groundwater, min_groundwater, max_groundwater_diff, min_groundwater_diff, 
-                          min_mean_temp_lead, max_mean_temp_lead, max_precip_lead, min_precip_lead, 
+                          max_groundwater, min_groundwater, max_groundwater_diff, min_groundwater_diff,
+                          min_mean_temp_lead, max_mean_temp_lead, max_precip_lead, min_precip_lead,
                           SWE,SWE_lag_diff,max_SWE_lead_diff,min_SWE_lead_diff) %>%
             mutate(joiner = 1) %>%
             mutate(Date_predicted = Date+x) %>%
@@ -1063,44 +1070,44 @@ last_measurements_well <- last_measurements %>%
                    mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
                    SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff)/(max_SWE_lead_diff-min_SWE_lead_diff)
             )
-          
+
           temp2_test <- temp2 %>%
             filter(days_in_year ==last_date_days_in_year )
 
-          
-      
-          
+
+
+
           predicted_response_ANN <- predict(fit_ann, newdata = temp2_pred)
           temp2_pred <- cbind(temp2_pred, predicted_response_ANN)
-          
-          
-          
-          
+
+
+
+
           #Combine data
           temp2_pred <- temp2_pred %>%
             dplyr::rename(ANN = predicted_response_ANN
             ) %>%
             gather(c(
                      ANN), key = "Model", value = predicted_value)
-          
+
           temp2_pred <- temp2_pred %>%
             mutate(predicted_value = predicted_value*(max_groundwater_diff - min_groundwater_diff) + min_groundwater_diff,
-                   groundwater = groundwater*(max_groundwater - min_groundwater) + min_groundwater)%>%
+                   groundwater = groundwater*(max_groundwater - min_groundwater) + min_groundwater) %>%
             mutate(predicted_value = groundwater + predicted_value) %>%
             mutate(lag_day = x)
-          
-          
+
+
           Time_series_data_2 <- rbind(Time_series_data_2, temp2_pred)
-          
-        
+
+
       }
-      
+
     }
-    
+
     # PLOTTING -----------------------------------------------------------------
-    
-     
-  
+
+
+
     #gather model predictions for plot
 
   Time_series_data_2_plot <- Time_series_data_2 %>%
@@ -1119,111 +1126,111 @@ last_measurements_well <- last_measurements %>%
     ungroup()
 
 
-    #Entire data set to plot actual levels 
+    #Entire data set to plot actual levels
       temp <- temp %>%
         mutate(days_in_year = yday(Date))
-      
+
       start_day = Sys.Date() - 365 + max(forecast_days) + 7
       end_day = Sys.Date() + max(forecast_days) + 7
-      
+
       start_year = year(start_day)
       end_year = year(end_day)
-      
+
      # filter historical data percentiles to just past forecast date
-      
+
       if(start_year == end_year){
-        
+
         temp_WL_states_temp_plot <- temp_WL_states_temp %>%
           mutate(month = month(fake_date), day = day(fake_date)) %>%
           mutate(Date = make_date(year = start_year, month =month, day = day))
-        
+
       }else{
-        
+
         temp_WL_states_temp1 <- temp_WL_states_temp %>%
-          mutate(month = month(fake_date), day = day(fake_date))%>%
+          mutate(month = month(fake_date), day = day(fake_date)) %>%
           mutate(Date = make_date(year = start_year, month =month, day = day))
-        
+
         temp_WL_states_temp2 <- temp_WL_states_temp %>%
-          mutate(month = month(fake_date), day = day(fake_date))%>%
+          mutate(month = month(fake_date), day = day(fake_date)) %>%
           mutate(Date = make_date(year = end_year, month =month, day = day))
-        
+
         temp_WL_states_temp_plot <- rbind(temp_WL_states_temp1,temp_WL_states_temp2)
-        
+
       }
-      
+
       temp_WL_states_temp_plot <- temp_WL_states_temp_plot %>%
         drop_na(Date)
 
-  
+
       snow_influenced  <- if (unique(pgown_well_info_Well_info$Snow_influenced == 0)) {
-       
-        
-        #climate graphs. 
+
+
+        #climate graphs.
         temp_historical_conditions <- temp %>%
           mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                  mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
           ) %>%
           mutate(days_in_year = yday(Date)) %>%
-          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag )%>%
+          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ) %>%
           gather(c(precipitation_lag, mean_temp_lag), key = "variable",value = "Value" )
-        
+
         #histoircal stats
-        
-        
-        
+
+
+
         deterministic_forecast_data_temp<- full_join(temp, deterministic_forecast_data_y)
-        
-        
+
+
         deterministic_forecast_data_temp <- deterministic_forecast_data_temp %>%
           mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                  mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
           ) %>%
           mutate(days_in_year = yday(Date)) %>%
-          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag , FC_type )%>%
+          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag , FC_type ) %>%
           gather(c(precipitation_lag, mean_temp_lag), key = "variable",value = "Value" ) %>%
-          drop_na(FC_type)%>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          drop_na(FC_type) %>%
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                    ifelse(variable == "precipitation_lag", "Precip (30 day)",NA)))
-        
+
         deterministic_forecast_data_temp_max <- max(deterministic_forecast_data_temp$Date)
-        
+
         ensemble_forecast_data_y_temp <- data.frame()
-        
-        
-        
+
+
+
         for(g in 1:max_ensemble){
 #g = 1
-          
+
           ensemble_forecast_data_z <- ensemble_forecast_data_y %>%
             filter(en_sim == g)
-          
+
           ensemble_forecast_data_z<- full_join(temp, ensemble_forecast_data_z)
-          
-          
+
+
           ensemble_forecast_data_z <- ensemble_forecast_data_z %>%
             mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                    mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
             ) %>%
             mutate(days_in_year = yday(Date)) %>%
-            dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag, FC_type, en_sim )%>%
+            dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag, FC_type, en_sim ) %>%
             gather(c(precipitation_lag, mean_temp_lag), key = "variable",value = "Value" ) %>%
-            drop_na(FC_type)%>%
-            mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+            drop_na(FC_type) %>%
+            mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                      ifelse(variable == "precipitation_lag", "Precip (30 day)", NA)))
-          
-          
-          
+
+
+
           ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp,ensemble_forecast_data_z)
         }
-        
-        
+
+
         ensemble_forecast_data_y_temp <- ensemble_forecast_data_y_temp %>%
           filter(Date >=deterministic_forecast_data_temp_max )
-        
-        
-        
+
+
+
         temp_historical_conditions_stats <- temp_historical_conditions %>%
-          mutate(month= month(Date), year = year(Date), day = day(Date))%>%
+          mutate(month= month(Date), year = year(Date), day = day(Date)) %>%
           group_by(month, day, variable) %>%
           summarise(predicted_value_mean = mean(Value, na.rm = TRUE),
                     predicted_value_min = min(Value, na.rm = TRUE),
@@ -1236,55 +1243,55 @@ last_measurements_well <- last_measurements %>%
                     predicted_value_5th = quantile(Value, 0.05, na.rm = TRUE),
                     predicted_value_95th = quantile(Value, 0.95, na.rm = TRUE)
           ) %>%
-          ungroup() 
-        
-        
+          ungroup()
+
+
         if(start_year == end_year){
-          
+
           temp_historical_conditions_stats_plot <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = start_year, month =month, day = day))
-          
+
         }else{
-          
+
           temp_historical_conditions_stats_temp1 <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = start_year, month =month, day = day))
-          
+
           temp_historical_conditions_stats_temp2 <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = end_year, month =month, day = day))
-          
+
           temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,temp_historical_conditions_stats_temp2)
-          
+
         }
-        
+
         temp_historical_conditions_stats_plot <- temp_historical_conditions_stats_plot %>%
           drop_na(Date) %>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                    ifelse(variable == "precipitation_lag", "Precip (30 day)", NA)))
-        
-        
-        
+
+
+
         temp_historical_conditions <- temp_historical_conditions %>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                    ifelse(variable == "precipitation_lag", "Precip (30 day)", NA)))
-        
+
         recharge_lag <- pgown_well_info_Well_info$Lag_time
-        
-  
+
+
         dummy_data2 <- data.frame(
           peak_recharge = as.Date(c(Sys.Date()+14 - recharge_lag , Sys.Date()+30 - recharge_lag, Sys.Date()+60 - recharge_lag, Sys.Date()+90 - recharge_lag)),
           prediction_period = c("14 Days", "30 Days", "60 Days", "90 Days"),
-          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag, 
+          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag,
                                   Sys.Date()+30 - recharge_lag -recharge_lag,
                                   Sys.Date()+60 - recharge_lag -recharge_lag,
                                   Sys.Date()+90 - recharge_lag -recharge_lag)),
-          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag, 
+          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag,
                                   Sys.Date()+30 - recharge_lag +recharge_lag,
                                   Sys.Date()+60 - recharge_lag +recharge_lag,
                                   Sys.Date()+90 - recharge_lag +recharge_lag)),
           variable = c("Precip (30 day)","Precip (30 day)","Precip (30 day)","Precip (30 day)"),
           location = c(0.8,0.87,0.95,1.03))
-        
-        
+
+
         gglayers <- list(
           #scale_y_continuous(sec.axis = sec_axis( trans=~.-temp2_toc, name="Depth below ground surface (m)")),
           theme_bw(),
@@ -1297,14 +1304,14 @@ last_measurements_well <- last_measurements %>%
             axis.text.x = element_text(angle = 30, hjust =1),
             legend.spacing.y = unit(0.1, 'mm'),
             legend.margin = ggplot2::margin(t = 0.25, b = 0.25)))
-        
+
         Precip_historical <- temp_historical_conditions_stats_plot %>%
           filter(variable =="Precip (30 day)" )
-        Range = max(Precip_historical$predicted_value_max) 
-        
+        Range = max(Precip_historical$predicted_value_max)
 
-        
-        
+
+
+
         temp_graph2 <- ggplot() +
           geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
           geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
@@ -1330,12 +1337,12 @@ last_measurements_well <- last_measurements %>%
                        size = 1,alpha = 0.5,
                        color = "darkblue")+
           geom_point(data = dummy_data2,
-                     aes(x = peak_recharge, 
+                     aes(x = peak_recharge,
                          y = Range*location),
                      shape = 21, size = 1,alpha = 0.5, fill = "darkblue") +
-          
+
           geom_text(data = dummy_data2,
-                    aes(x = upper_range, 
+                    aes(x = upper_range,
                         y = Range*location,
                         label = prediction_period),
                     color = "darkblue",
@@ -1345,80 +1352,80 @@ last_measurements_well <- last_measurements %>%
           theme(legend.position = "none") +  # Remove legend
           facet_grid(variable ~ ., scale = "free_y")
         temp_graph2
-        
-        
-        
-        
-        
+
+
+
+
+
       }else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
-        
-        #climate graphs. 
+
+        #climate graphs.
         temp_historical_conditions <- temp %>%
           mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                  mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
           ) %>%
           mutate(days_in_year = yday(Date)) %>%
-          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE )%>%
+          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE ) %>%
           gather(c(precipitation_lag, mean_temp_lag, SWE), key = "variable",value = "Value" )
-        
+
         #histoircal stats
-        
-        
+
+
         deterministic_forecast_data_temp<- full_join(temp, deterministic_forecast_data_y)
-        
-        
+
+
         deterministic_forecast_data_temp <- deterministic_forecast_data_temp %>%
           mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                  mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
           ) %>%
           mutate(days_in_year = yday(Date)) %>%
-          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE, FC_type )%>%
+          dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE, FC_type ) %>%
           gather(c(precipitation_lag, mean_temp_lag, SWE), key = "variable",value = "Value" ) %>%
-          drop_na(FC_type)%>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          drop_na(FC_type) %>%
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                                    ifelse(variable == "precipitation_lag", "Precip (30 day)",
                                                           ifelse(variable == "SWE", "SWE", NA))))
         deterministic_forecast_data_temp_max <- max(deterministic_forecast_data_temp$Date)
-        
+
         ensemble_forecast_data_y_temp <- data.frame()
-          
-        
-        
+
+
+
         for(g in 1:max_ensemble){
           # g = 2
-          
-          
+
+
           ensemble_forecast_data_z <- ensemble_forecast_data_y %>%
             filter(en_sim == g)
-          
+
           ensemble_forecast_data_z<- full_join(temp, ensemble_forecast_data_z)
-          
-          
+
+
           ensemble_forecast_data_z <- ensemble_forecast_data_z %>%
             mutate(precipitation_lag = rollsum(total_precip, 30, fill = NA,align='right', na.rm = T), #recharge lagging precipitation
                    mean_temp_lag = rollmean(mean_temp, 30, fill = NA,align='right', na.rm = T)
             ) %>%
             mutate(days_in_year = yday(Date)) %>%
-            dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE, FC_type, en_sim )%>%
+            dplyr::select(Date,days_in_year, precipitation_lag,mean_temp_lag ,SWE, FC_type, en_sim ) %>%
             gather(c(precipitation_lag, mean_temp_lag, SWE), key = "variable",value = "Value" ) %>%
-            drop_na(FC_type)%>%
-            mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+            drop_na(FC_type) %>%
+            mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                      ifelse(variable == "precipitation_lag", "Precip (30 day)",
                                             ifelse(variable == "SWE", "SWE", NA))))
-          
-          
-          
+
+
+
           ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp,ensemble_forecast_data_z)
         }
-        
-        
+
+
         ensemble_forecast_data_y_temp <- ensemble_forecast_data_y_temp %>%
           filter(Date >=deterministic_forecast_data_temp_max )
-        
-        
-        
+
+
+
         temp_historical_conditions_stats <- temp_historical_conditions %>%
-          mutate(month= month(Date), year = year(Date), day = day(Date))%>%
+          mutate(month= month(Date), year = year(Date), day = day(Date)) %>%
           group_by(month, day, variable) %>%
           summarise(predicted_value_mean = mean(Value, na.rm = TRUE),
                     predicted_value_min = min(Value, na.rm = TRUE),
@@ -1431,71 +1438,71 @@ last_measurements_well <- last_measurements %>%
                     predicted_value_5th = quantile(Value, 0.05, na.rm = TRUE),
                     predicted_value_95th = quantile(Value, 0.95, na.rm = TRUE)
           ) %>%
-          ungroup() 
-        
-        
+          ungroup()
+
+
         if(start_year == end_year){
-          
+
           temp_historical_conditions_stats_plot <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = start_year, month =month, day = day))
-          
+
         }else{
-          
+
           temp_historical_conditions_stats_temp1 <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = start_year, month =month, day = day))
-          
+
           temp_historical_conditions_stats_temp2 <- temp_historical_conditions_stats %>%
             mutate(Date = make_date(year = end_year, month =month, day = day))
-          
+
           temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,temp_historical_conditions_stats_temp2)
-          
+
         }
-        
+
         temp_historical_conditions_stats_plot <- temp_historical_conditions_stats_plot %>%
           drop_na(Date) %>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                             ifelse(variable == "precipitation_lag", "Precip (30 day)",
                                                    ifelse(variable == "SWE", "SWE", NA))))
-        
-        
-        
+
+
+
         temp_historical_conditions <- temp_historical_conditions %>%
-          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)", 
+          mutate(variable = ifelse(variable == "mean_temp_lag", "Temp (30 day)",
                                    ifelse(variable == "precipitation_lag", "Precip (30 day)",
                                           ifelse(variable == "SWE", "SWE", NA))))
-        
-        
-        
-        
+
+
+
+
         # model error
         recharge_lag <- pgown_well_info_Well_info$Lag_time
-       
-        
-        
+
+
+
         dummy_data2 <- data.frame(
           peak_recharge = as.Date(c(Sys.Date()+14 - recharge_lag , Sys.Date()+30 - recharge_lag, Sys.Date()+60 - recharge_lag, Sys.Date()+90 - recharge_lag)),
           prediction_period = c("14 Days", "30 Days", "60 Days", "90 Days"),
-          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag, 
+          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag,
                                   Sys.Date()+30 - recharge_lag -recharge_lag,
                                   Sys.Date()+60 - recharge_lag -recharge_lag,
                                   Sys.Date()+90 - recharge_lag -recharge_lag)),
-          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag, 
+          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag,
                                   Sys.Date()+30 - recharge_lag +recharge_lag,
                                   Sys.Date()+60 - recharge_lag +recharge_lag,
                                   Sys.Date()+90 - recharge_lag +recharge_lag)),
           variable = c("Precip (30 day)","Precip (30 day)","Precip (30 day)","Precip (30 day)"),
           location = c(0.8,0.87,0.95,1.03))
-        
-        
+
+
         Precip_historical <- temp_historical_conditions_stats_plot %>%
           filter(variable =="Precip (30 day)" )
-        Range = max(Precip_historical$predicted_value_max) 
-        
-        
-        
+        Range = max(Precip_historical$predicted_value_max)
+
+
+
         #plot(dummy_data2)
-        
-        
+
+
         gglayers <- list(
           #scale_y_continuous(sec.axis = sec_axis( trans=~.-temp2_toc, name="Depth below ground surface (m)")),
           theme_bw(),
@@ -1508,11 +1515,11 @@ last_measurements_well <- last_measurements %>%
             axis.text.x = element_text(angle = 30, hjust =1),
             legend.spacing.y = unit(0.1, 'mm'),
             legend.margin = ggplot2::margin(t = 0.25, b = 0.25)))
-        
-        
+
+
         #deterministic_forecast_data_temp
         #ensemble_forecast_data_y_temp
-        
+
         temp_graph2 <- ggplot() +
           geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
           geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
@@ -1538,12 +1545,12 @@ last_measurements_well <- last_measurements %>%
                        size = 1,alpha = 0.5,
                        color = "darkblue")+
           geom_point(data = dummy_data2,
-                     aes(x = peak_recharge, 
+                     aes(x = peak_recharge,
                          y = Range*location),
                      shape = 21, size = 1,alpha = 0.5, fill = "darkblue") +
-          
+
           geom_text(data = dummy_data2,
-                    aes(x = upper_range, 
+                    aes(x = upper_range,
                         y = Range*location,
                         label = prediction_period),
                     color = "darkblue",
@@ -1553,38 +1560,38 @@ last_measurements_well <- last_measurements %>%
           theme(legend.position = "none") +  # Remove legend
           facet_grid(variable ~ ., scale = "free_y")
         temp_graph2
-        
-        
-        
-      }
-      
-      
-      
-      
-      deterministic_forecast_data_y_last_date<- max(deterministic_forecast_data_y$Date)
-      
-      ensemble_forecast_data_y_last_date <- max(ensemble_forecast_data_y$Date)
-      
-      Time_series_data_2_plot <- left_join(Time_series_data_2_plot, well_lag_time_2)
-      
-    
-      Time_series_data_2_plot$Model <- factor(Time_series_data_2_plot$Model, levels = c("Good, Forecast less sensitive to future climate",
-                                                                                        "Good, Forecast more sensitive to future climate", 
-                                                                                        "Fair, Forecast less sensitive to future climate", 
-                                                                                        "Fair, Forecast more sensitive to future climate"))
-      
 
-      
-      
-      
-      
-      
+
+
+      }
+
+
+
+
+      deterministic_forecast_data_y_last_date <- max(deterministic_forecast_data_y$Date)
+
+      ensemble_forecast_data_y_last_date <- max(ensemble_forecast_data_y$Date)
+
+      Time_series_data_2_plot <- left_join(Time_series_data_2_plot, well_lag_time_2)
+
+
+      Time_series_data_2_plot$Model <- factor(Time_series_data_2_plot$Model, levels = c("Good, Forecast less sensitive to future climate",
+                                                                                        "Good, Forecast more sensitive to future climate",
+                                                                                        "Fair, Forecast less sensitive to future climate",
+                                                                                        "Fair, Forecast more sensitive to future climate"))
+
+
+
+
+
+
+
       # Define custom color scale for performance categories
       performance_colors <- c('Good, Forecast less sensitive to future climate' = '#00CC00',
                               'Good, Forecast more sensitive to future climate' = "#99FF00",
-                              'Fair, Forecast less sensitive to future climate' = '#FF6600', 
+                              'Fair, Forecast less sensitive to future climate' = '#FF6600',
                               'Fair, Forecast more sensitive to future climate' = '#FFCC33')
-      
+
       gglayers <- list(
         theme_bw(),
         ylab("Water Level Below Ground (m)"),
@@ -1598,7 +1605,7 @@ last_measurements_well <- last_measurements %>%
           legend.margin = ggplot2::margin(t = 0.25, b = 0.25)
         )
       )
-      
+
       # Create the first plot (temp_graph) without the legend
       temp_graph <- ggplot() +
         geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - Min, fill = "1) Much Below Normal (0 - 10th percentile)"), size = 1) +
@@ -1630,23 +1637,23 @@ last_measurements_well <- last_measurements %>%
         theme(legend.position = "none") +  # Remove legend
         facet_grid(Well ~ ., scale = "free_y")+
         scale_y_reverse()
-      
+
       temp_graph
       # Create the second plot (temp_graph2) without the legend
       ggsave(temp_graph, filename = paste0(output_path,"/","Well_",y,"_Model_Prediction_rawplot_", plot_type,".jpeg"), height = 6.5, width = 11, units = "in")
-      
-      
-      
-      
+
+
+
+
       dummy_data <- data.frame(
         Date_predicted = as.Date(c('2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04')),
         fake_value = c(1, 2, 3, 4),
-        performance = c('Good, Forecast less sensitive to future climate', 
+        performance = c('Good, Forecast less sensitive to future climate',
                         'Good, Forecast more sensitive to future climate',
                         'Fair, Forecast less sensitive to future climate',
                         'Fair, Forecast more sensitive to future climate')
       )
-      
+
 
       legend_plot <- cowplot::get_legend(
         ggplot() +
@@ -1669,7 +1676,7 @@ last_measurements_well <- last_measurements %>%
              "Ensemble Forecast" = "orange"
            )
          ) +
-         
+
           new_scale_color() +
           geom_crossbar(data = dummy_data, aes(x = Date_predicted, y = fake_value, ymin = fake_value, ymax = fake_value, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
           geom_errorbar(data = dummy_data, aes(x = Date_predicted, ymin = fake_value, ymax = fake_value, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
@@ -1683,12 +1690,12 @@ last_measurements_well <- last_measurements %>%
                           yend = Range*location, color = "Peak Recharge Period"),
                       size = 1,alpha = 0.5)+
          geom_point(data = dummy_data2,
-                    aes(x = peak_recharge, 
+                    aes(x = peak_recharge,
                         y = Range*location, color = "Peak Recharge Period"),
                     size = 1,alpha = 0.5 ) +
-         
+
          geom_text(data = dummy_data2,
-                   aes(x = upper_range, 
+                   aes(x = upper_range,
                        y = Range*location,
                        label = prediction_period, color = "Peak Recharge Period"),
                                       size = 2,
@@ -1704,54 +1711,54 @@ last_measurements_well <- last_measurements %>%
             legend.title = element_text(size = 9)  # Adjust the size as needed
           )
       )
-      
+
       plot(legend_plot)
-      
+
       #
 
 
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       # aquifer info, aquifer number, aquifer subtype.
-      
+
       #disclaimer.
       boxplot_description <- paste("Recorded & \n Predicted Levels \n 95th, 75th, 50th,\n 25th, 5th")
       Well_name <- paste("Well =",pgown_well_info_Well_info$Well)
       Location <- paste("Location =",pgown_well_info_Well_info$Location)
-      
+
       Aquifer_id <- paste("Aquifer ID =",pgown_well_info_Well_info$aquifer_id)
       subtype <- paste("Aquifer subtype = ",  pgown_well_info_Well_info$subtype_sym)
       Climate_station_id <- paste("Climate Station =", pgown_well_info_Well_info$Climate_station_Id)
       Climate_station_name <- paste("Climate Station = \n", pgown_well_info_Well_info$Climate_station_me)
       snow_station <- paste("Snow Station =",pgown_well_info_Well_info$snow_stn)
-      
+
       above_normal_definition <- "1) Above Normal - above 75th percentile"
       normal_definition <- "2) Normal - 25th to 75th percentile"
       below_normal_definition <- "3) Below Normal - below 25th percentile"
-      
-      
+
+
       note_1 <-  "    Explanation"
       note_2 <-  "        - 'Range of Predictions' displays results of simulations using deterministic and ensemble climate forecast data,"
-      note_3 <-  "           and historical climate scenarios (for periods longer then available climate forecasts). Boxplots show percentiles" 
+      note_3 <-  "           and historical climate scenarios (for periods longer then available climate forecasts). Boxplots show percentiles"
       note_4 <-  "           of simulations and general likelihood."
       note_5 <- ""
-      
+
       note_6 <-  "        - 'Subject to climate uncertainty' indicates that the prediction at a given forecast period becomes more reliant on future"
       note_7 <-  "           climate variability and is subject to more future climate uncertainty without accurate climate forcasts."
       note_8 <- ""
-      
+
       note_9 <-  "        - 'Good' Model performance indicates for a given forecast period the model performs well, while 'Fair' indicates a acceptable"
       note_10 <- "           model performance for a given forecast period."
       note_11 <- ""
@@ -1759,15 +1766,15 @@ last_measurements_well <- last_measurements %>%
       note_13 <- "           percentile for each forecast period based on Root Mean Square Error statistics generated during model testing."
       note_14 <- "        - 'Peak Recharge Period' indicates the timeframe that climate variables are expected to most impact groundwater levels."
 
-      
-      
+
+
       disclaimer_title<- "    Disclaimer"
       disclaimer <-      "        Groundwater level forecasts use statistical models and third-party data. These models have two types of errors:"
       disclaimer1 <-     "        systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and"
       disclaimer2 <-     "        water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation"
 
-      
-      
+
+
       Note_comb <- ggpubr::text_grob(
         paste(
           note_1,
@@ -1793,9 +1800,9 @@ last_measurements_well <- last_measurements %>%
         ),
         x = 0, hjust = 0, face = "italic", size = 6.5
       )
-      
-      
-      
+
+
+
       Note_comb2 <- ggpubr::text_grob(
         paste(
           note_8,
@@ -1807,10 +1814,10 @@ last_measurements_well <- last_measurements %>%
         ),
         x = 0, hjust = 0, face = "italic", size = 7
       )
-      
-      
-      
-      
+
+
+
+
       text_annotation2 <- ggpubr::text_grob(
         paste(
           "Disclaimer",
@@ -1821,8 +1828,8 @@ last_measurements_well <- last_measurements %>%
         ),
         x = 0, hjust = 0, face = "italic", size = 6.5
       )
-      
-      
+
+
      snow_influenced  <- if (unique(pgown_well_info_Well_info$Snow_influenced == 0)) {
        text_annotation <- ggpubr::text_grob(
          paste(
@@ -1837,7 +1844,7 @@ last_measurements_well <- last_measurements %>%
          x = 0, hjust = 0,  size = 9
        )
                             }else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
-                            
+
                               text_annotation <- ggpubr::text_grob(
                                 paste(
                                  Well_name,
@@ -1850,22 +1857,22 @@ last_measurements_well <- last_measurements %>%
                                   sep = "\n"
                                 ),
                                 x = 0, hjust = 0,  size = 9
-                              ) 
+                              )
                               }
-  
-  
-  
+
+
+
       # Add the specified text below the table
-     
-      
+
+
       Probabilities <- Time_series_data_2 %>%
         mutate(days_in_year = yday(Date_predicted))
-      
-      
-      
-      
+
+
+
+
       Probabilities <- left_join(Probabilities, temp_WL_states_temp)
-      
+
       calculate_likelihood <- function(data, condition) {
         data %>%
           mutate(count = 1) %>%
@@ -1875,7 +1882,7 @@ last_measurements_well <- last_measurements %>%
           ungroup() %>%
           mutate(likelihood = if_else(total == 0, NA_real_, count/total))
       }
-      
+
       # Use the function to calculate likelihoods
       Probabilities_above_normal <- calculate_likelihood(Probabilities, predicted_value >= per75th)
       Probabilities_normal <- calculate_likelihood(Probabilities, predicted_value <= per75th & predicted_value >= per25th)
@@ -1887,65 +1894,65 @@ last_measurements_well <- last_measurements %>%
         mutate(Probabilities_normal, category = "2) Normal - 25th to 75th percentile"),
         mutate(Probabilities_below_normal, category = "3) Below Normal - below 25th percentile")
       )
-      
-      
+
+
       # Calculate ensemble likelihoods
-  
-      
-      
+
+
+
       Probabilities_combined <- Probabilities_combined %>%
         mutate(likelihood = likelihood*100)
 
-      
+
       Probabilities_combined <- Probabilities_combined %>%
         mutate(likelihood = pmin(round(likelihood / 5) * 5, 95))
       Probabilities_combined <- Probabilities_combined %>%
         filter(Model == "ANN")
-      
+
       Probabilities_combined_liklihood <- Probabilities_combined %>%
-        arrange(Date_predicted)%>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")"))%>%
-        dplyr::select(category, table_name, likelihood)%>%
+        arrange(Date_predicted) %>%
+        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        dplyr::select(category, table_name, likelihood) %>%
         mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
-        spread(table_name,likelihood) 
-      
+        spread(table_name,likelihood)
+
       Probabilities_combined_lag_day <- Probabilities_combined %>%
-        arrange(Date_predicted)%>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")"))%>%
-        mutate(lag_day = paste0(lag_day," days"))%>%
-        dplyr::select(category,table_name, lag_day)%>%
-        mutate(category = "")%>%
-        distinct(category,table_name, lag_day)%>%
-        spread(table_name,lag_day) 
-      
+        arrange(Date_predicted) %>%
+        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        mutate(lag_day = paste0(lag_day," days")) %>%
+        dplyr::select(category,table_name, lag_day) %>%
+        mutate(category = "") %>%
+        distinct(category,table_name, lag_day) %>%
+        spread(table_name,lag_day)
+
       Probabilities_combined_Date_predicted <- Probabilities_combined %>%
-        arrange(Date_predicted)%>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")"))%>%
-        dplyr::select(category,table_name, Date_predicted)%>%
+        arrange(Date_predicted) %>%
+        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        dplyr::select(category,table_name, Date_predicted) %>%
         mutate(category = "Liklihood of Groundwater Conditions (%)",
-               Date_predicted = as.character(Date_predicted))%>%
-        distinct(category,table_name, Date_predicted)%>%
-        spread(table_name,Date_predicted) 
-      
+               Date_predicted = as.character(Date_predicted)) %>%
+        distinct(category,table_name, Date_predicted) %>%
+        spread(table_name,Date_predicted)
+
       Probabilities_combined_model <- Probabilities_combined %>%
-        arrange(Date_predicted)%>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")"))%>%
-        dplyr::select(category,table_name, Model)%>%
-        mutate(category = "Conditions")%>%
-        distinct(category,table_name, Model)%>%
-        spread(table_name,Model) 
-      
-      
+        arrange(Date_predicted) %>%
+        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        dplyr::select(category,table_name, Model) %>%
+        mutate(category = "Conditions") %>%
+        distinct(category,table_name, Model) %>%
+        spread(table_name,Model)
+
+
       Probabilities_combined2 <- rbind(Probabilities_combined_lag_day,
                                       Probabilities_combined_Date_predicted, #,Probabilities_combined_model,
                                       Probabilities_combined_liklihood)
-      
 
-    
+
+
 
       #Customize the table theme
-      
-      
+
+
       mytheme <- gridExtra::ttheme_default(
         core = list(
           fg_params = list(
@@ -1955,58 +1962,58 @@ last_measurements_well <- last_measurements %>%
         colhead = list(fg_params = list(cex = 0.7)),
         rowhead = list(fg_params = list(cex = 0.7))
       )
-      
-      
+
+
       temp_chart <- gridExtra::tableGrob(Probabilities_combined2, theme = mytheme, rows = NULL, cols = NULL)
-      
-      
-      
+
+
+
       #Anno#Anno#Annotate the ggplot table
-      
+
       temp_chart_gg <- temp_chart
-        
+
        # ggpubr::annotate_figure(temp_chart,
         #                               top = ggpubr::text_grob(" "),
-         #                              fig.lab = "Table 1: Likelihood of Groundwater Conditions (%)", 
+         #                              fig.lab = "Table 1: Likelihood of Groundwater Conditions (%)",
           #                             fig.lab.pos = "top.left",
            #                            fig.lab.size = 9)
-   
-      
+
+
       box_plot_explanation <- paste0(data_location,"Boxplot_Explanation.png")
       box_plot_explanation <- image_read(box_plot_explanation)
-  
+
       box_plot_explanation <- rasterGrob(box_plot_explanation, interpolate = TRUE)
-      
-      
 
-      RF_logo <- paste0(data_location,"WLRS/English/BC_WLRS_H_RGB_pos.png")
-      
+
+
+      RF_logo <- paste0(data_location, "WLRS/English/BC_WLRS_H_RGB_pos.png")
+
       RF_logo <- image_read(RF_logo)
-      
-      
-      
-      RF_logo <- rasterGrob(RF_logo, interpolate = TRUE)
-      
-     
-    
-    Hatfield_logo <- paste0(data_location,"Hatfield_Logo_Hor_Blue_RGB.png")
-    
-    Hatfield_logo <- image_read(Hatfield_logo)
-    
-    
-    
-    Hatfield_logo <- rasterGrob(Hatfield_logo, interpolate = TRUE)
-    
-      
 
-      
-      
-      
+
+
+      RF_logo <- rasterGrob(RF_logo, interpolate = TRUE)
+
+
+
+    Hatfield_logo <- paste0(data_location, "Hatfield_Logo_Hor_Blue_RGB.png")
+
+    Hatfield_logo <- image_read(Hatfield_logo)
+
+
+
+    Hatfield_logo <- rasterGrob(Hatfield_logo, interpolate = TRUE)
+
+
+
+
+
+
       # Arrange the plots and the table in a grid with cowplot
       temp_figure <- cowplot::plot_grid(
         cowplot::plot_grid(temp_graph, temp_graph2, ncol = 1, align = "v", axis = "lr", rel_heights = c(1, 0.75)),
-        cowplot::plot_grid( temp_chart_gg, 
-          cowplot::plot_grid(legend_plot, 
+        cowplot::plot_grid( temp_chart_gg,
+          cowplot::plot_grid(legend_plot,
                              cowplot::plot_grid(text_annotation,box_plot_explanation, ncol = 1, align = "v", axis = "lr", rel_heights = c(0.3, 0.7)),
                              ncol = 2, rel_widths = c(1, 0.8)),
           Note_comb,
@@ -2017,49 +2024,49 @@ last_measurements_well <- last_measurements %>%
         ncol = 2,
         rel_widths = c(1.5, 1)
       )
-      
-      
+
+
       # Print the final figure
       print(temp_figure)
-      
-      
-      
-      
+
+
+
+
       #Arrange the plot and the table in a grid
       #temp_figure <- ggpubr::ggarrange(temp_graph, temp_chart_gg, ncol = 2, widths = c(3, 1))
-      
-      
-      
+
+
+
       location <- pgown_well_info %>%
-        filter(Well == y)%>%
+        filter(Well == y) %>%
         pull(Location)
-      
+
       recharge_type <- ifelse(plot_type == "snow", "snowmelt dominated environment", "rainfall dominated environment")
-      
-      
-      
+
+
+
       #Annotate the final figure
       final_figure <- ggpubr::annotate_figure(temp_figure,
                                       top = ggpubr::text_grob(" "),
-                                      fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"), 
+                                      fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"),
                                       fig.lab.pos = "top.left"
                                       )
-            
+
       #Save the final figure
-      
+
        ggsave(final_figure, filename = paste0(output_path,"/","Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 13.5, units = "in")
      #  ggsave(final_figure, filename = paste0(figure_location,"Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 11.5, units = "in")
-       
-       
-       #simplistic image 
-       
-       
-       
+
+
+       #simplistic image
+
+
+
        # Arrange the plots and the table in a grid with cowplot
        temp_figure_simple <- cowplot::plot_grid(
          cowplot::plot_grid(temp_graph, temp_graph2, ncol = 1, align = "v", axis = "lr", rel_heights = c(1, 0.75)),
-         cowplot::plot_grid( #temp_chart_gg, 
-           legend_plot, 
+         cowplot::plot_grid( #temp_chart_gg,
+           legend_plot,
            box_plot_explanation,
            # Note_comb,
            cowplot::plot_grid(Hatfield_logo, RF_logo, ncol = 2, align = "h", rel_widths = c(0.4, 0.6)),
@@ -2069,50 +2076,50 @@ last_measurements_well <- last_measurements %>%
          ncol = 2,
          rel_widths = c(2, 1)
        )
-       
-       
+
+
        # Print the final figure
        print(temp_figure_simple)
-       
-       
-       
-       
+
+
+
+
        #Arrange the plot and the table in a grid
        #temp_figure <- ggpubr::ggarrange(temp_graph, temp_chart_gg, ncol = 2, widths = c(3, 1))
-       
-       
-       
+
+
+
        location <- pgown_well_info %>%
-         filter(Well == y)%>%
+         filter(Well == y) %>%
          pull(Location)
-       
+
        recharge_type <- ifelse(plot_type == "snow", "snowmelt dominated environment", "rainfall dominated environment")
-       
-       
-       
+
+
+
        #Annotate the final figure
        final_figure_simple <- ggpubr::annotate_figure(temp_figure_simple,
                                                top = ggpubr::text_grob(" "),
-                                               fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"), 
+                                               fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"),
                                                fig.lab.pos = "top.left"
        )
-       
+
        #Save the final figure
-       
+
        ggsave(final_figure_simple, filename = paste0(output_path,"/","Well_",y,"_Model_Predictions_simple_", plot_type,".jpeg"), height = 6, width = 10.1, units = "in")
        #  ggsave(final_figure, filename = paste0(figure_location,"Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 11.5, units = "in")
-       
-       
-       
-       
+
+
+
+
        Probabilities_combined_output <- Probabilities_combined %>%
          mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
-         mutate(conditions = category)%>%
+         mutate(conditions = category) %>%
          dplyr::select(Well, Date_predicted, lag_day, Model,likelihood,conditions)
        Probabilities_combined_output
-       
+
        Waterlevel_adjustments
-       
+
        Time_series_data_2_plot <- Time_series_data_2_plot %>%
        dplyr::select(-Model) %>%
          mutate(across(where(is.numeric), ~ na_if(.x, -Inf))) %>%
@@ -2133,14 +2140,14 @@ last_measurements_well <- last_measurements %>%
            predicted_value_95th = Waterlevel_adjustments_temp - as.numeric(predicted_value_95th)
          ) %>%
          mutate(missing_data = ifelse(is.na(groundwater), "Missing", NA))
-        
+
       Probabilities_combined_output<- full_join(Probabilities_combined_output,Time_series_data_2_plot)
 
   }else{
-    
+
     Probabilities_combined_output <- data.frame(Well = y,
                                                 Date_predicted = NA,
-                                                lag_day = NA, 
+                                                lag_day = NA,
                                                 Model = "ANN",
                                                 likelihood = NA,
                                                 conditions = NA,
@@ -2159,13 +2166,13 @@ last_measurements_well <- last_measurements %>%
                                                 performance = NA,
                                                # ME = NA,
                                                 missing_data = NA)
-    
-    
+
+
   }
-      
+
 
       return(Probabilities_combined_output)
 
   }
-  
+
 }
