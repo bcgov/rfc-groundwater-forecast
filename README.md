@@ -11,7 +11,9 @@ wells using artificial neural network computational models.
 
 ### Project Status
 
-This project is under development and will be subject to a large amount of change.
+This project is under development and will be subject to a large amount of change. 
+
+This project is maintained by River Forecast Centre in the Water Management Branch of the BC Ministry of Water, Land and Resource Stewardship.
 
 ### Getting Help or Reporting an Issue
 
