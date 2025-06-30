@@ -4,6 +4,11 @@
 Groundwater Level Forecasting - River Forecast Centre
 ============================
 
+R scripts for forecasting groundwater levels in BC's
+[Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network) 
+wells using artificial neural network computational models.
+
+
 ### Project Status
 
 This project is under development and will be subject to a large amount of change.
