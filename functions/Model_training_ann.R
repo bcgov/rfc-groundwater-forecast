@@ -5,9 +5,13 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
   # Creates historical groundwater levels for figures
 
-  temp_WL_states<- Time_series_data %>%
-    mutate(days_in_year = yday(Date)) %>%
-    group_by(days_in_year, Well) %>%
+  temp_WL_states <- Time_series_data %>%
+    mutate(days_in_year = yday(Date),
+           Month = month(Date),
+           Day = day(Date)) %>%
+    # group_by(days_in_year, Well) %>%
+    filter(Month != 2 | Day != 29) %>%
+    group_by(Well, Month, Day) %>%
     drop_na(groundwater) %>%
     summarise(Min = min(groundwater),
               per5th = quantile(groundwater, 0.05),
@@ -18,7 +22,9 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
               per90th = quantile(groundwater, 0.9),
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
-    mutate(fake_date = as.Date("2020-01-01") + days_in_year)
+    # mutate(fake_date = as.Date("2020-01-01") + days_in_year - 1,
+    mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
+           days_in_year = yday(fake_date))
 
 
   Waterlevel_adjustments <- Time_series_data %>%

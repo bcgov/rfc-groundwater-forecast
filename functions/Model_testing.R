@@ -3,10 +3,14 @@ Model_testing <- function(Time_series_data, pgown_well_info, forecast_days, num_
 
   # Creates historical groundwater levels for figures
 
-  temp_WL_states<- Time_series_data %>%
-    mutate(days_in_year = yday(Date)) %>%
+  temp_WL_states <- Time_series_data %>%
+    mutate(days_in_year = yday(Date),
+           Month = month(Date),
+           Day = day(Date)) %>%
     #filter(Date <= as.Date("2023-12-31")) %>%
-    group_by(days_in_year, Well) %>%
+    # group_by(days_in_year, Well) %>%
+    filter(Month != 2 | Day != 29) %>%
+    group_by(Well, Month, Day) %>%
     drop_na(groundwater) %>%
     summarise(Min = min(groundwater),
               per5th = quantile(groundwater, 0.05),
@@ -17,7 +21,11 @@ Model_testing <- function(Time_series_data, pgown_well_info, forecast_days, num_
               per90th = quantile(groundwater, 0.9),
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
-    mutate(fake_date = as.Date("2020-01-01")+days_in_year)
+    # mutate(fake_date = as.Date("2020-01-01") + days_in_year - 1,
+    mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
+           days_in_year = yday(fake_date))
+
+
 
 
   Waterlevel_adjustments <- Time_series_data %>%
@@ -986,17 +994,17 @@ temp2_original <- temp2
     save(Time_series_data_3_operational, file = filename )
 
 
-
-
-
-    temp_WL_states<- temp %>%
+    temp_WL_states <- temp %>%
       filter(Well == y) %>%
       drop_na(groundwater) %>%
       group_by(Well) %>%
       mutate(Mean_total = mean(groundwater)) %>%
-      mutate(days_in_year = yday(Date)) %>%
+      mutate(days_in_year = yday(Date),
+             Month = month(Date),
+             Day = day(Date)) %>%
       #filter(Date <= as.Date("2023-12-31")) %>%
-      group_by(days_in_year, Well) %>%
+      filter(Month != 2 | Day != 29) %>%
+      group_by(Well, Month, Day) %>%
       summarise(Min = min(groundwater),
                 per5th = quantile(groundwater, 0.05),
                 per10th = quantile(groundwater, 0.1),
@@ -1008,8 +1016,8 @@ temp2_original <- temp2
                 Max = max(groundwater),
                 Mean = mean(groundwater),
                 Mean_total = mean(Mean_total)) %>%
-      mutate(fake_date = as.Date("2020-01-01")+days_in_year)
-
+      mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
+             days_in_year = yday(fake_date))
 
 
     summer_months <- c(5, 6, 7, 8, 9, 10)
