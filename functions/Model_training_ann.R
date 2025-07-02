@@ -22,6 +22,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
               per90th = quantile(groundwater, 0.9),
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
+    ungroup() %>%
     # mutate(fake_date = as.Date("2020-01-01") + days_in_year - 1,
     mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
            days_in_year = yday(fake_date))
@@ -57,8 +58,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
   simulated_data <- foreach(y = Well_list, .combine = rbind,
                             .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv",
                                           "randomForest", "zoo", "ggnewscale",
-                                          "cowplot", "nnet"))
-  %dopar% {
+                                          "cowplot", "nnet")) %dopar% {
 
     # filter data by well
     temp <- Time_series_data %>%

@@ -21,6 +21,7 @@ Model_testing <- function(Time_series_data, pgown_well_info, forecast_days, num_
               per90th = quantile(groundwater, 0.9),
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
+    ungroup() %>%
     # mutate(fake_date = as.Date("2020-01-01") + days_in_year - 1,
     mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
            days_in_year = yday(fake_date))
@@ -1016,6 +1017,7 @@ temp2_original <- temp2
                 Max = max(groundwater),
                 Mean = mean(groundwater),
                 Mean_total = mean(Mean_total)) %>%
+      ungroup() %>%
       mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
              days_in_year = yday(fake_date))
 

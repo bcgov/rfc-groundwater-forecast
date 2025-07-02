@@ -10,7 +10,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
   temp_WL_states <- Time_series_data %>%
     mutate(days_in_year = yday(Date),
            Month = month(Date),
-           Day = day(Date)) %>%
+           Day = day(Date),
+           year = year(Date)) %>%
+    filter(Date < (Sys.Date() + max(forecast_days) + 7)-years(1)) %>% # remove current year from plot
     #filter(Date <= as.Date("2023-12-31")) %>%
     # group_by(days_in_year, Well) %>%
     filter(Month != 2 | Day != 29) %>%
@@ -25,6 +27,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
               per90th = quantile(groundwater, 0.9),
               per95th = quantile(groundwater, 0.95),
               Max = max(groundwater)) %>%
+    ungroup() %>%
     # mutate(fake_date = as.Date("2020-01-01") + days_in_year - 1,
     mutate(fake_date = as.Date(paste0("2020-", Month, "-", Day)),
            days_in_year = yday(fake_date))
@@ -53,14 +56,17 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
   last_measurements <- Time_series_data %>%
     group_by(Well) %>%
     drop_na(groundwater) %>%
-    summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
-    ungroup()
+    filter(Date == max(Date)) %>%
+    mutate(last_measurements = Date,
+           last_measurements_value = groundwater ) %>%
+    ungroup() %>%
+    dplyr::select(Well, last_measurements, last_measurements_value)
 
-  last_measurements <- left_join(pgown_well_info_temp2,last_measurements)
+  last_measurements <- left_join(pgown_well_info_temp2, last_measurements, by = join_by(Well))
 
 
 
-  Well_list <- as.list(unique(pgown_well_info_temp$Well))
+  Well_list <- as.list(sort(unique(pgown_well_info_temp$Well)))
 
   # Pre-allocate a list to store the results
   simulated_data <- vector("list", length(Well_list))
@@ -72,13 +78,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
     y = Well_list, .combine = rbind,
     .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv",
                   "randomForest", "zoo", "ggnewscale",
-                  "grid", "cowplot", "nnet", "magick"))
-  %dopar% {
+                  "grid", "cowplot", "nnet", "magick")) %dopar% {
 
     # filter data by well
-    #y= "OW459"
-    #y= "OW002"
-    # y = Well_list[1]
+    #y= "OW492"
+                    #y= "OW002"
+                    #y= "OW406"
+                    # y = Well_list[1]
+
 
     last_measurements_well <- last_measurements %>%
       filter(Well == y) %>%
@@ -94,7 +101,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
       temp_WL_states_temp <- temp_WL_states %>%
         filter(Well == y)
 
-      pgown_well_info_Well_info <- pgown_well_info_temp%>%
+      pgown_well_info_Well_info <- pgown_well_info_temp %>%
         filter(Well == y)
 
       #groundwater level adjustment to actual DTW
@@ -196,13 +203,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
       deterministic_forecast_data_y_prediction_date <- deterministic_forecast_data_y %>%
         ungroup() %>%
-        summarise(last_measurements= min(Date, na.rm = TRUE)) %>%
+        summarise(last_measurements = min(Date, na.rm = TRUE)) %>%
         ungroup() %>%
         pull(last_measurements)
 
       ensemble_forecast_data_y_prediction_date <- ensemble_forecast_data_y %>%
         ungroup() %>%
-        summarise(last_measurements= min(Date, na.rm = TRUE)) %>%
+        summarise(last_measurements = min(Date, na.rm = TRUE)) %>%
         ungroup() %>%
         pull(last_measurements)
 
@@ -415,7 +422,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
           last_date <- temp2_original %>%
             drop_na(groundwater) %>%
-            summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
+            summarise(last_measurements = max(Date, na.rm = TRUE)) %>%
             pull(last_measurements)
 
 
@@ -872,13 +879,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
           last_date <- temp2_original%>%
             drop_na(groundwater) %>%
-            summarise(last_measurements= max(Date, na.rm = TRUE)) %>%
+            summarise(last_measurements = max(Date, na.rm = TRUE)) %>%
             pull(last_measurements)
 
 
-          last_date_days_in_year  <- yday(last_date+x)
+          last_date_days_in_year  <- yday(last_date + x)
 
-          Prediction_date <- last_date+x
+          Prediction_date <- last_date + x
 
           monte_carlo_df <- monte_carlo_df %>%
             filter(days_in_year == last_date_days_in_year) %>%
@@ -1121,7 +1128,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
       #gather model predictions for plot
 
       Time_series_data_2_plot <- Time_series_data_2 %>%
-        group_by(Well, Date,Date_predicted,lag_day,Model, groundwater) %>%
+        group_by(Well, Date, Date_predicted, lag_day,Model, groundwater) %>%
         summarise(predicted_value_mean = mean(predicted_value, na.rm = TRUE),
                   predicted_value_min = min(predicted_value, na.rm = TRUE),
                   predicted_value_max = max(predicted_value, na.rm = TRUE),
@@ -1152,17 +1159,17 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
         temp_WL_states_temp_plot <- temp_WL_states_temp %>%
           mutate(month = month(fake_date), day = day(fake_date)) %>%
-          mutate(Date = make_date(year = start_year, month =month, day = day))
+          mutate(Date = make_date(year = start_year, month = month, day = day))
 
       } else {
 
         temp_WL_states_temp1 <- temp_WL_states_temp %>%
           mutate(month = month(fake_date), day = day(fake_date)) %>%
-          mutate(Date = make_date(year = start_year, month =month, day = day))
+          mutate(Date = make_date(year = start_year, month = month, day = day))
 
         temp_WL_states_temp2 <- temp_WL_states_temp %>%
           mutate(month = month(fake_date), day = day(fake_date)) %>%
-          mutate(Date = make_date(year = end_year, month =month, day = day))
+          mutate(Date = make_date(year = end_year, month = month, day = day))
 
         temp_WL_states_temp_plot <- rbind(temp_WL_states_temp1,temp_WL_states_temp2)
 
@@ -1235,12 +1242,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
         ensemble_forecast_data_y_temp <- ensemble_forecast_data_y_temp %>%
-          filter(Date >=deterministic_forecast_data_temp_max )
+          filter(Date >= deterministic_forecast_data_temp_max )
 
 
 
         temp_historical_conditions_stats <- temp_historical_conditions %>%
-          mutate(month= month(Date), year = year(Date), day = day(Date)) %>%
+          mutate(month = month(Date), year = year(Date), day = day(Date)) %>%
+          # filter(year < max(year)) %>% # remove current year from plot
+          filter(Date < end_day - years(1)) %>% # remove current year from plot
           group_by(month, day, variable) %>%
           summarise(predicted_value_mean = mean(Value, na.rm = TRUE),
                     predicted_value_min = min(Value, na.rm = TRUE),
@@ -1259,17 +1268,18 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         if (start_year == end_year) {
 
           temp_historical_conditions_stats_plot <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = start_year, month =month, day = day))
+            mutate(Date = make_date(year = start_year, month = month, day = day))
 
         } else {
 
           temp_historical_conditions_stats_temp1 <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = start_year, month =month, day = day))
+            mutate(Date = make_date(year = start_year, month = month, day = day))
 
           temp_historical_conditions_stats_temp2 <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = end_year, month =month, day = day))
+            mutate(Date = make_date(year = end_year, month = month, day = day))
 
-          temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,temp_historical_conditions_stats_temp2)
+          temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,
+                                                         temp_historical_conditions_stats_temp2)
 
         }
 
@@ -1299,7 +1309,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                   Sys.Date()+60 - recharge_lag +recharge_lag,
                                   Sys.Date()+90 - recharge_lag +recharge_lag)),
           variable = c("Precip (30 day)","Precip (30 day)","Precip (30 day)","Precip (30 day)"),
-          location = c(0.8,0.87,0.95,1.03))
+          location = c(0.8, 0.87, 0.95, 1.03))
 
 
         gglayers <- list(
@@ -1307,7 +1317,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           theme_bw(),
           ylab("  Degrees (°C) Precipitation (mm)"),
           xlab(""),
-          scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day)),
+          scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day), expand = c(0,0)),
           theme(#legend.title = element_blank(),
             legend.position = "right",
             legend.background = element_blank(),
@@ -1316,27 +1326,27 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
             legend.margin = ggplot2::margin(t = 0.25, b = 0.25)))
 
         Precip_historical <- temp_historical_conditions_stats_plot %>%
-          filter(variable =="Precip (30 day)" )
+          filter(variable == "Precip (30 day)" )
         Range = max(Precip_historical$predicted_value_max)
 
 
 
 
         temp_graph2 <- ggplot() +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
           scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
           scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
           gglayers +
           new_scale_colour() +
           new_scale_fill() +
           geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 1) +
-          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1,linewidth = 1) +
+          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 1) +
           geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 1) +
           scale_colour_manual(name = "", values = c("black","red","orange")) +
           geom_segment(data = dummy_data2,
@@ -1344,21 +1354,21 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                            xend = upper_range,
                            y = Range*location,
                            yend = Range*location),
-                       size = 1,alpha = 0.5,
+                       size = 1, alpha = 0.5,
                        color = "darkblue")+
           geom_point(data = dummy_data2,
                      aes(x = peak_recharge,
                          y = Range*location),
-                     shape = 21, size = 1,alpha = 0.5, fill = "darkblue") +
+                     shape = 21, size = 1, alpha = 0.5, fill = "darkblue") +
 
           geom_text(data = dummy_data2,
-                    aes(x = upper_range,
+                    aes(x = lower_range,
                         y = Range*location,
                         label = prediction_period),
                     color = "darkblue",
                     size = 2,
                     vjust = 0.25,
-                    hjust = -0.25)+
+                    hjust = 1)+
           theme(legend.position = "none") +  # Remove legend
           facet_grid(variable ~ ., scale = "free_y")
         temp_graph2
@@ -1367,7 +1377,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-      }else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
+      } else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
 
         #climate graphs.
         temp_historical_conditions <- temp %>%
@@ -1435,7 +1445,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
         temp_historical_conditions_stats <- temp_historical_conditions %>%
-          mutate(month= month(Date), year = year(Date), day = day(Date)) %>%
+          mutate(month = month(Date), year = year(Date), day = day(Date)) %>%
+          filter(Date < end_day - years(1)) %>% # remove current year from plot
           group_by(month, day, variable) %>%
           summarise(predicted_value_mean = mean(Value, na.rm = TRUE),
                     predicted_value_min = min(Value, na.rm = TRUE),
@@ -1454,17 +1465,18 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         if (start_year == end_year) {
 
           temp_historical_conditions_stats_plot <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = start_year, month =month, day = day))
+            mutate(Date = make_date(year = start_year, month = month, day = day))
 
         } else {
 
           temp_historical_conditions_stats_temp1 <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = start_year, month =month, day = day))
+            mutate(Date = make_date(year = start_year, month = month, day = day))
 
           temp_historical_conditions_stats_temp2 <- temp_historical_conditions_stats %>%
-            mutate(Date = make_date(year = end_year, month =month, day = day))
+            mutate(Date = make_date(year = end_year, month = month, day = day))
 
-          temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,temp_historical_conditions_stats_temp2)
+          temp_historical_conditions_stats_plot <- rbind(temp_historical_conditions_stats_temp1,
+                                                         temp_historical_conditions_stats_temp2)
 
         }
 
@@ -1518,7 +1530,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           theme_bw(),
           ylab(" Degrees (°C) SWE (mm) Precipitation (mm)"),
           xlab(""),
-          scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day)),
+          scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day), expand = c(0,0)),
           theme(#legend.title = element_blank(),
             legend.position = "right",
             legend.background = element_blank(),
@@ -1531,20 +1543,20 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         #ensemble_forecast_data_y_temp
 
         temp_graph2 <- ggplot() +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
-          geom_ribbon(data = temp_historical_conditions_stats_plot,alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
+          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
           scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
           scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
           gglayers +
           new_scale_colour() +
           new_scale_fill() +
           geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 1) +
-          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1,linewidth = 1) +
+          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 1) +
           geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 1) +
           scale_colour_manual(name = "", values = c("black","red","orange")) +
           geom_segment(data = dummy_data2,
@@ -1552,21 +1564,21 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                            xend = upper_range,
                            y = Range*location,
                            yend = Range*location),
-                       size = 1,alpha = 0.5,
+                       size = 1, alpha = 0.5,
                        color = "darkblue")+
           geom_point(data = dummy_data2,
                      aes(x = peak_recharge,
                          y = Range*location),
-                     shape = 21, size = 1,alpha = 0.5, fill = "darkblue") +
+                     shape = 21, size = 1, alpha = 0.5, fill = "darkblue") +
 
           geom_text(data = dummy_data2,
-                    aes(x = upper_range,
+                    aes(x = lower_range,
                         y = Range*location,
                         label = prediction_period),
                     color = "darkblue",
                     size = 2,
                     vjust = 0.25,
-                    hjust = -0.25)+
+                    hjust = 1)+
           theme(legend.position = "none") +  # Remove legend
           facet_grid(variable ~ ., scale = "free_y")
         temp_graph2
@@ -1606,7 +1618,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         theme_bw(),
         ylab("Water Level Below Ground (m)"),
         xlab(""),
-        scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day)),
+        scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day), expand = c(0,0)),
         theme(
           legend.position = "right",
           legend.background = element_blank(),
@@ -1690,8 +1702,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           ) +
 
           new_scale_color() +
-          geom_crossbar(data = dummy_data, aes(x = Date_predicted, y = fake_value, ymin = fake_value, ymax = fake_value, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
-          geom_errorbar(data = dummy_data, aes(x = Date_predicted, ymin = fake_value, ymax = fake_value, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+          geom_crossbar(data = dummy_data,
+                        aes(x = Date_predicted, y = fake_value, ymin = fake_value, ymax = fake_value, colour = performance),
+                        alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+          geom_errorbar(data = dummy_data,
+                        aes(x = Date_predicted, ymin = fake_value, ymax = fake_value, colour = performance),
+                        alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
           scale_colour_manual(name = "Model Performance (forecast period)", values = performance_colors) +
           new_scale_colour() +
           #  geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_50th - ME, ymax = Waterlevel_adjustments_temp - predicted_value_50th + ME, colour = "Expected model error from 'typical conditions'"), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
@@ -1700,19 +1716,19 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                            xend = upper_range,
                            y = Range*location,
                            yend = Range*location, color = "Peak Recharge Period"),
-                       size = 1,alpha = 0.5)+
+                       size = 1, alpha = 0.5)+
           geom_point(data = dummy_data2,
                      aes(x = peak_recharge,
                          y = Range*location, color = "Peak Recharge Period"),
-                     size = 1,alpha = 0.5 ) +
+                     size = 1, alpha = 0.5 ) +
 
           geom_text(data = dummy_data2,
-                    aes(x = upper_range,
+                    aes(x = lower_range,
                         y = Range*location,
                         label = prediction_period, color = "Peak Recharge Period"),
                     size = 2,
                     vjust = 0.25,
-                    hjust = -0.25)+
+                    hjust = 1)+
           # geom_vline(aes(xintercept = deterministic_forecast_data_y_last_date, colour = "Deterministic Forecast"), linetype = 2) +
           #  geom_vline(aes(xintercept = ensemble_forecast_data_y_last_date, colour = "Ensemble Forecast"), linetype = 3) +
           scale_colour_manual(name = "", values = c("darkblue")) +
@@ -1855,7 +1871,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           ),
           x = 0, hjust = 0,  size = 9
         )
-      }else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
+      } else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
 
         text_annotation <- ggpubr::text_grob(
           paste(
@@ -1926,40 +1942,71 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
         dplyr::select(category, table_name, likelihood) %>%
         mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
-        spread(table_name,likelihood)
+        spread(table_name, likelihood)
 
       Probabilities_combined_lag_day <- Probabilities_combined %>%
         arrange(Date_predicted) %>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
         mutate(lag_day = paste0(lag_day," days")) %>%
-        dplyr::select(category,table_name, lag_day) %>%
+        dplyr::select(category, table_name, lag_day) %>%
         mutate(category = "") %>%
-        distinct(category,table_name, lag_day) %>%
-        spread(table_name,lag_day)
+        distinct(category, table_name, lag_day) %>%
+        spread(table_name, lag_day)
 
       Probabilities_combined_Date_predicted <- Probabilities_combined %>%
         arrange(Date_predicted) %>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
         dplyr::select(category,table_name, Date_predicted) %>%
-        mutate(category = "Liklihood of Groundwater Conditions (%)",
-               Date_predicted = as.character(Date_predicted)) %>%
-        distinct(category,table_name, Date_predicted) %>%
-        spread(table_name,Date_predicted)
+        mutate(category = "Likelihood of Groundwater Conditions (%)",
+               Date_predicted = as.character(format(Date_predicted, "%b-%d"))) %>%
+        distinct(category, table_name, Date_predicted) %>%
+        spread(table_name, Date_predicted)
 
       Probabilities_combined_model <- Probabilities_combined %>%
         arrange(Date_predicted) %>%
-        mutate(table_name = paste0(Date_predicted," (",lag_day," days; ",Model,")")) %>%
+        mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
         dplyr::select(category,table_name, Model) %>%
         mutate(category = "Conditions") %>%
-        distinct(category,table_name, Model) %>%
-        spread(table_name,Model)
+        distinct(category, table_name, Model) %>%
+        spread(table_name, Model)
+
+
+        # calculate latest percentile
+
+        latest_wl <- last_measurements %>%
+          filter(Well == y) %>%
+          dplyr::select(Well,
+                        Date = last_measurements,
+                        Latest = last_measurements_value)
+
+        temp_WL_states_latest <- temp_WL_states %>%
+          filter(Well == y) %>%
+          filter(days_in_year == yday(latest_wl$Date)) %>%
+          left_join(latest_wl, by = join_by(Well)) %>%
+          mutate(Latest_Percentile = case_when(Latest < per25th ~ "Below Normal",
+                                               Latest <= per75th  ~ "Normal",
+                                               Latest > per75th ~ "Above Normal"),
+                 Date = as.character(format(Date, "%b-%d"))) %>%
+          dplyr::select(Date, Latest_Percentile)
+
+
+        latest_value_table <- tibble(latest = c("Latest",
+                                                temp_WL_states_latest$Date,
+                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Above Normal", "100", ""),
+                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Normal", "100", ""),
+                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Below Normal", "100", "")))
 
 
       Probabilities_combined2 <- rbind(Probabilities_combined_lag_day,
                                        Probabilities_combined_Date_predicted, #,Probabilities_combined_model,
-                                       Probabilities_combined_liklihood)
+                                       Probabilities_combined_liklihood) %>%
+        bind_cols(latest_value_table) %>%
+        dplyr::select(category, latest, everything())
 
 
+      #         Probabilities_combined2 <- rbind(Probabilities_combined_lag_day,
+      #                                  Probabilities_combined_Date_predicted, #,Probabilities_combined_model,
+      #                                  Probabilities_combined_liklihood)
 
 
       #Customize the table theme
@@ -2154,7 +2201,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         ) %>%
         mutate(missing_data = ifelse(is.na(groundwater), "Missing", NA))
 
-      Probabilities_combined_output<- full_join(Probabilities_combined_output,Time_series_data_2_plot)
+      Probabilities_combined_output<- full_join(Probabilities_combined_output, Time_series_data_2_plot)
 
     } else {
 

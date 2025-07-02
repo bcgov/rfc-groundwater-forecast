@@ -47,7 +47,8 @@ for (i in Regional_group_list) {
   # i <- Regional_group_list[6]
 
   pgown_well_info <- pgown_well_info_all %>%
-    filter(Regional_group == i)
+    filter(Regional_group == i) #%>%
+  #  filter(Well == "OW002")
 
 
   ## Downloads -----------------------------------------------------------------
