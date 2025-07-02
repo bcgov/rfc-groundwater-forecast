@@ -26,10 +26,17 @@
 
 ## Load inputs and functions ---------------------------------------------------
 
-
 source("01_ConfigInputs.R")
 
 
+## Create directories  ---------------------------------------------------------
+
+output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
+dir.create(output_path, showWarnings = FALSE)
+
+
+## Get data for testing---------------------------------------------------------
 
 pgown_well_info_all <- read_csv(paste0(user_input_location, "Climate_station_testing.csv"))
 
@@ -41,13 +48,9 @@ Regional_group_list <- pgown_well_info_all %>%
 Regional_group_list <- as.list(Regional_group_list)
 
 
-# Specify the path where you want to create the new folder
-output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
-dir.create(output_path, showWarnings = FALSE)
+## Loop through each region and run assigning scripts  -------------------------
 
-
-for(i in Regional_group_list){
+for (i in Regional_group_list) {
 
 
   # Filter well information for the current regional group
@@ -130,9 +133,32 @@ for(i in Regional_group_list){
 
 
   filename = paste0(output_path, "/List_RFC_station_", i, ".csv")
-  write_csv(combined_results, filename )
+  write_csv(combined_results, filename)
 
 }
+
+
+# Merge input/prep data file with output to create prep file for CCF analysis
+
+list_of_files <- list.files(path = output_path, pattern = "List_RFC_station",
+                                  full.names = TRUE)
+
+combined <- bind_rows(
+  lapply(list_of_files, function(file){
+
+    read.csv(file = file, stringsAsFactors = FALSE)
+  }))
+
+prep_file <- read_csv(paste0(output_path, "/CCF_lag_analysis_inputs_prep.csv"))
+
+data_out <- left_join(prep_file, combined)
+
+write.csv(data_out,
+          paste0(output_path,
+                 "/CCF_lag_analysis_inputs_prep.csv"), row.names = FALSE)
+
+
+
 
 
 

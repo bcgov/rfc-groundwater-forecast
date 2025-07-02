@@ -33,19 +33,16 @@ source("functions/dl_snow_data.R")
 source("functions/dl_deterministic_forecast.R")
 source("functions/dl_ensemble_forecast.R")
 
-#create a new directory to save the figures too based on the date.
+## Create directories  ---------------------------------------------------------
 
-figure_location <- "Output/"
-
-# Specify the path where you want to create the new folder
 output_path <- paste0(figure_location, "Model_results/", as.character(Sys.Date()))
-
-# Create new folder
-dir.create(output_path)
-
+dir.create(paste0(figure_location, "Model_results/"), showWarnings = FALSE)
+dir.create(output_path, showWarnings = FALSE)
 
 
-for(i in Regional_group_list){
+## Loop through each region and run forecasting scripts  -----------------------
+
+for (i in Regional_group_list) {
 
   # i <- Regional_group_list[6]
 
@@ -53,23 +50,17 @@ for(i in Regional_group_list){
     filter(Regional_group == i)
 
 
-  ## Downloads -------------------------------------------------------------------
+  ## Downloads -----------------------------------------------------------------
 
   climate_data <- dl_climate_data(pgown_well_info, data_location)
-
   pgown_data <- dl_pgown_wl_data(pgown_well_info, data_location)
-
   snow_data <- dl_snow_data(pgown_well_info, data_location)
-
   ensemble_forecast_data <- dl_ensemble_forecast(pgown_well_info, data_location)
-
   deterministic_forecast_data <- dl_deterministic_forecast(pgown_well_info, data_location)
 
+  # Merge timeseries data
 
-
-  # Combine data
-
-  Time_series_data <- full_join(pgown_data, climate_data) %>%
+  Time_series_data <- full_join(pgown_data, climate_data, by = c("Date", "Well")) %>%
     full_join(snow_data, by = c("Date", "Well")) %>%
     filter(Date >= as.Date("2004-01-01")) %>%
     pad(by = "Date", group = c("Well")) %>%
@@ -84,11 +75,7 @@ for(i in Regional_group_list){
     ungroup() %>%
     distinct()
 
-
-
-
-
-  #### MODEL ####
+  #### MODEL -------------------------------------------------------------------
 
   source("functions/Forecasting.R")
 
@@ -99,10 +86,31 @@ for(i in Regional_group_list){
                                            Missing_date_window, rfc_forecast_date_window)
 
 
-  write_csv(Model_Forecasting_data,paste0(output_path, "/predictive_forecast_results_", i, ".csv"))
+  # Save the csv output
+  write_csv(Model_Forecasting_data, paste0(output_path, "/predictive_forecast_results_", i, ".csv"))
+  # write_csv(Model_Forecasting_data, paste0("Output/Model_results/predictive_forecast_results_", i, ".csv"))
 
 }
 
+
+# Merge forecast files into one file
+
+list_of_results <- list.files(path = output_path,
+                              pattern = "predictive_forecast_results_",
+                              full.names = TRUE)
+
+combined <- bind_rows(
+  lapply(list_of_results, function(forecast_file){
+    read_csv(file = forecast_file) %>%
+      mutate(Date_predicted = as.Date(Date_predicted))
+  })) %>%
+  filter(!is.na(lag_day))
+
+data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS online
+  left_join(pgown_well_info_all)
+
+write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
+write.csv(data_out, paste0("Output/Model_results/predictive_forecast_results.csv"), row.names = FALSE)
 
 
 

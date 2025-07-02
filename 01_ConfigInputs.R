@@ -23,11 +23,11 @@
 #
 # ==============================================================================
 #
+
 ## LOAD CRAN PACKAGES --------------------------------------------------
 pkgs <- c('tidyverse',
           'lubridate',
           'padr',
-          'weathercan',
           'zoo',
           'ggplot2',
           'patchwork',
@@ -42,7 +42,6 @@ pkgs <- c('tidyverse',
           'powerjoin',
           'foreach',
           'doParallel',
-          'bcsnowdata',
           'reshape',
           'dplyr',
           "janitor",
@@ -52,12 +51,27 @@ pkgs <- c('tidyverse',
           "nnet",
           "cowplot",
           "magick",
-          "grid")
+          "grid",
+          "xgboost")
 
 #Queries and installs missing packages
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
+# Non-cran packages
+pkgs_github <- c('weathercan',
+                 'bcsnowdata')
+new.packages_github <- pkgs_github[!(pkgs_github %in% installed.packages()[,"Package"])]
+
+if ('weathercan' %in% new.packages_github) {
+  pak::pak("ropensci/weathercan", lib = Sys.getenv("R_LIBS_USER"))
+}
+if ('bcsnowdata' %in% new.packages_github) {
+  pak::pak("bcgov/bcsnowdata", lib = Sys.getenv("R_LIBS_USER"))
+}
+
+# load packages
+pkgs <- c(pkgs, pkgs_github)
 lapply(pkgs, library, character.only = TRUE)
 
 
@@ -107,6 +121,7 @@ rfc_forecast_date_window <- 3
 
 # OPTIONS ----------------------------------------------------------------
 
-options(digits = 3, scipen = 5, warn = 0)
+options(digits = 3, scipen = 5, warn = 0, timeout = 1200)
 
+Sys.setenv(TZ = "America/Vancouver")
 

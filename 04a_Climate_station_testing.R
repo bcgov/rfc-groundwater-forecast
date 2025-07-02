@@ -31,7 +31,14 @@ source("functions/dl_climate_data_testing.R")
 source("functions/dl_pgown_wl_data.R")
 
 
+## Create directories  ---------------------------------------------------------
 
+output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
+dir.create(output_path, showWarnings = FALSE)
+
+
+## Load data -------------------------------------------------------------------
 
 pgown_well_info_all <- read_csv(paste0(user_input_location, "Climate_station_testing.csv"))
 
@@ -43,17 +50,9 @@ Regional_group_list <- pgown_well_info_all %>%
 Regional_group_list <- as.list(Regional_group_list)
 
 
-# Specify the path where you want to create the new folder
-output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
+## Loop through each region and run testing scripts  ---------------------------
 
-# Create new folder
-dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
-dir.create(output_path, showWarnings = FALSE)
-
-
-
-
-for (i in Regional_group_list){
+for (i in Regional_group_list) {
 
   # i <- Regional_group_list[9]
 
@@ -324,6 +323,39 @@ for (i in Regional_group_list){
 }
 
 
+# Merge input data with output to create prep file for CCF analysis
+
+list_of_suggestions <- list.files(path = output_path, pattern = "Suggested_climate_station",
+                                  full.names = TRUE)
+
+combined <- bind_rows(
+  lapply(list_of_suggestions, function(file){
+
+  read.csv(file = file, stringsAsFactors = FALSE) %>%
+      dplyr::select(-Region) %>%
+      mutate(climate_infilled_1 = as.character(climate_infilled_1),
+             climate_infilled_2 = as.character(climate_infilled_2),
+             climate_infilled_3 = as.character(climate_infilled_3),
+             climate_infilled_4 = as.character(climate_infilled_4),
+             climate_infilled_5 = as.character(climate_infilled_5))
+}))
+
+data_out <- left_join(pgown_well_info_all, combined) %>%
+  mutate(Training_start_date = "",
+         snow_stn = "") %>%
+  dplyr::rename(Climate_station_Id = climate_infilled_1,
+                Climate_Infilled_id =climate_infilled_2,
+                Climate_secondary_Infilled = climate_infilled_3,
+                Climate_tertiary_Infilled = climate_infilled_4,
+                Climate_quaternary_Infilled = climate_infilled_5) %>%
+  select(Well,	Regional_group,	Region,	Location,	latitude,	longitude,	aquifer_id,
+         Snow_influenced,	Training_start_date,	Climate_station_Id,	Climate_station_me,
+         Climate_Infilled_id,	Climate_secondary_Infilled,	Climate_tertiary_Infilled,
+         Climate_quaternary_Infilled,	snow_stn)
+
+write.csv(data_out,
+          paste0(output_path,
+                 "/CCF_lag_analysis_inputs_prep.csv"), row.names = FALSE)
 
 
 

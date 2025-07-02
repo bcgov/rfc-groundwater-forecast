@@ -31,13 +31,19 @@ source("functions/dl_pgown_wl_data.R")
 source("functions/dl_snow_data_testing.R")
 
 
-# Read the well information data
+## Create directories  ---------------------------------------------------------
 
+output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
+dir.create(output_path, showWarnings = FALSE)
+
+
+## Get data for testing---------------------------------------------------------
+
+# Read the well information data
 pgown_well_info_all <- read_csv(paste0(user_input_location, "Climate_station_testing.csv"))
 
-
 # Extract distinct regional groups from the well information data
-
 Regional_group_list <- pgown_well_info_all %>%
   dplyr::select(Regional_group) %>%
   distinct(Regional_group) %>%
@@ -46,15 +52,9 @@ Regional_group_list <- pgown_well_info_all %>%
 Regional_group_list <- as.list(Regional_group_list)
 
 
-# Specify the path where you want to create the new folder
-output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
-dir.create(output_path, showWarnings = FALSE)
+## Loop through each region and run testing scripts  ---------------------------
 
-
-# Extract distinct regional groups from the well information data
-
-for (i in Regional_group_list){
+for (i in Regional_group_list) {
 
 
   # Filter well information for the current regional group
@@ -99,7 +99,8 @@ for (i in Regional_group_list){
   pgown_well_info_sf <- st_as_sf(pgown_well_info)
 
   # Transform to EPSG:3857 (Web Mercator)
-  pgown_well_info_proj <- st_transform(pgown_well_info_sf, crs = CRS("+proj=merc +datum=WGS84"))
+  pgown_well_info_proj <- st_transform(pgown_well_info_sf,
+                                       crs = CRS("+proj=merc +datum=WGS84"))
 
   # Download snow station data and filter for active stations
 
@@ -208,7 +209,8 @@ for (i in Regional_group_list){
   pgown_well_info_df2 <- pgown_well_info_df %>%
     dplyr::select(Well,Start_year, End_year)
 
-  snow_date_ranges_dates <- left_join(snow_date_ranges_dates, pgown_well_info_df2)
+  snow_date_ranges_dates <- left_join(snow_date_ranges_dates,
+                                      pgown_well_info_df2)
 
 
   # Filter and rank snow stations based on data completeness and distance
@@ -331,19 +333,22 @@ for (i in Regional_group_list){
 
   # Join the cross-correlation data with snow date ranges
 
-  snow_date_ranges_dates2 <- full_join(snow_date_ranges_dates,ccf_data_to_use)
+  snow_date_ranges_dates2 <- full_join(snow_date_ranges_dates, ccf_data_to_use)
 
   # Select relevant columns for the final output
 
 
   snow_date_ranges_dates2 <- snow_date_ranges_dates2 %>%
-    dplyr::select(Well, LOCATION_ID, start_date_SWE, end_date_SWE, distance_m, per_data_complete, rank)
+    dplyr::select(Well, LOCATION_ID, start_date_SWE, end_date_SWE,
+                  distance_m, per_data_complete, rank)
   # Write the final data to a CSV file
 
   filename = paste0(output_path, "/List_Snow_station_", i, ".csv")
-  write_csv(snow_date_ranges_dates2, filename )
+  write_csv(snow_date_ranges_dates2, filename)
 
 }
+
+
 
 
 

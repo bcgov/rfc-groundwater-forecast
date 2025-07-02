@@ -32,30 +32,24 @@ source("functions/dl_pgown_wl_data.R")
 source("functions/dl_snow_data.R")
 
 
+## Loop through each region and run training scripts  --------------------------
 
-
-for(i in Regional_group_list){
+for (i in Regional_group_list) {
 
   # i <- Regional_group_list[6]
 
   pgown_well_info <- pgown_well_info_all %>%
     filter(Regional_group == i)
 
-
-  ## Downloads -------------------------------------------------------------------
+  ## Downloads -----------------------------------------------------------------
 
   climate_data <- dl_climate_data(pgown_well_info, data_location)
-
   pgown_data <- dl_pgown_wl_data(pgown_well_info, data_location)
-
   snow_data <- dl_snow_data(pgown_well_info, data_location)
 
+  # Merge timeseries data
 
-
-
-
-
-  Time_series_data <- full_join(pgown_data, climate_data) %>%
+  Time_series_data <- full_join(pgown_data, climate_data, by = c("Date", "Well")) %>%
     full_join(snow_data, by = c("Date", "Well")) %>%
     filter(Date >= as.Date("2004-01-01")) %>%
     pad(by = "Date", group = c("Well")) %>%
@@ -70,10 +64,7 @@ for(i in Regional_group_list){
     ungroup() %>%
     distinct()
 
-
-
-
-  #### MODEL ####
+  #### MODEL -------------------------------------------------------------------
 
   source("functions/Model_training_ann.R")
 
@@ -82,9 +73,4 @@ for(i in Regional_group_list){
                                             output_path, model_path,
                                             pgown_well_info)
 
-
 }
-
-
-
-
