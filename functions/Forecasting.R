@@ -82,9 +82,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
     # filter data by well
     #y= "OW492"
-                    #y= "OW002"
-                    #y= "OW406"
-                    # y = Well_list[1]
+    #y= "OW002"
+    #y= "OW406"
+    # y = Well_list[1]
 
 
     last_measurements_well <- last_measurements %>%
@@ -1345,9 +1345,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           gglayers +
           new_scale_colour() +
           new_scale_fill() +
-          geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 1) +
-          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 1) +
-          geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 1) +
+          geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 0.8) +
+          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) +
+          geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 0.8) +
           scale_colour_manual(name = "", values = c("black","red","orange")) +
           geom_segment(data = dummy_data2,
                        aes(x = lower_range,
@@ -1555,9 +1555,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
           gglayers +
           new_scale_colour() +
           new_scale_fill() +
-          geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 1) +
-          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 1) +
-          geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 1) +
+          geom_line(data = temp_historical_conditions, aes(x = Date, y = Value, colour = "1"), linewidth = 0.8) +
+          geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) +
+          geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 0.8) +
           scale_colour_manual(name = "", values = c("black","red","orange")) +
           geom_segment(data = dummy_data2,
                        aes(x = lower_range,
@@ -1637,6 +1637,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per90th, ymin = Waterlevel_adjustments_temp - per75th, fill = "4) Above Normal (75 - 90th percentile)"), size = 1) +
         #  geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per95th, ymin = Waterlevel_adjustments_temp - per90th, fill = "Above Normal (75 - 90th percentile)"), size = 1) +
         geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - Max, ymin = Waterlevel_adjustments_temp - per90th, fill = "5) Much Above Normal (90 - 100th percentile)"), size = 1) +
+        geom_line(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, y = Waterlevel_adjustments_temp - per50th), linewidth = 0.1, colour = "#808080", alpha = 0.5) +
         scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
         scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
         gglayers +
@@ -1971,30 +1972,30 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
         spread(table_name, Model)
 
 
-        # calculate latest percentile
+      # calculate latest percentile
 
-        latest_wl <- last_measurements %>%
-          filter(Well == y) %>%
-          dplyr::select(Well,
-                        Date = last_measurements,
-                        Latest = last_measurements_value)
+      latest_wl <- last_measurements %>%
+        filter(Well == y) %>%
+        dplyr::select(Well,
+                      Date = last_measurements,
+                      Latest = last_measurements_value)
 
-        temp_WL_states_latest <- temp_WL_states %>%
-          filter(Well == y) %>%
-          filter(days_in_year == yday(latest_wl$Date)) %>%
-          left_join(latest_wl, by = join_by(Well)) %>%
-          mutate(Latest_Percentile = case_when(Latest < per25th ~ "Below Normal",
-                                               Latest <= per75th  ~ "Normal",
-                                               Latest > per75th ~ "Above Normal"),
-                 Date = as.character(format(Date, "%b-%d"))) %>%
-          dplyr::select(Date, Latest_Percentile)
+      temp_WL_states_latest <- temp_WL_states %>%
+        filter(Well == y) %>%
+        filter(days_in_year == yday(latest_wl$Date)) %>%
+        left_join(latest_wl, by = join_by(Well)) %>%
+        mutate(Latest_Percentile = case_when(Latest < per25th ~ "Below Normal",
+                                             Latest <= per75th  ~ "Normal",
+                                             Latest > per75th ~ "Above Normal"),
+               Date = as.character(format(Date, "%b-%d"))) %>%
+        dplyr::select(Date, Latest_Percentile)
 
 
-        latest_value_table <- tibble(latest = c("Latest",
-                                                temp_WL_states_latest$Date,
-                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Above Normal", "100", ""),
-                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Normal", "100", ""),
-                                                ifelse(temp_WL_states_latest$Latest_Percentile == "Below Normal", "100", "")))
+      latest_value_table <- tibble(latest = c("Latest",
+                                              temp_WL_states_latest$Date,
+                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Above Normal", "100", ""),
+                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Normal", "100", ""),
+                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Below Normal", "100", "")))
 
 
       Probabilities_combined2 <- rbind(Probabilities_combined_lag_day,
