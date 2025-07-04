@@ -111,7 +111,7 @@ data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS o
   left_join(pgown_well_info_all)
 
 write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
-write.csv(data_out, paste0("Output/predictive_forecast_results.csv"), row.names = FALSE)
+write.csv(data_out, paste0("output/predictive_forecast_results.csv"), row.names = FALSE)
 
 
 
