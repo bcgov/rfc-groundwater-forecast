@@ -51,9 +51,16 @@ rsconnect/
 
 # Model files
 models/
-Output/
+output/
+testing and calibration/
+data/pgown_data.Rdata
+data/snow_data_raw.Rdata
+user_inputs/archive/
+Rplots.pdf
 
 
 # Word Documents
 *Next Steps.docx
 *~$xt Steps.docx
+data/Boxplot_Explanation - Original.png
+data/Boxplot_Explanation.pptx

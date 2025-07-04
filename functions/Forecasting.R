@@ -2115,7 +2115,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
       #Save the final figure
 
       ggsave(final_figure, filename = paste0(output_path,"/","Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 13.5, units = "in")
-      ggsave(final_figure, filename = paste0("Output/Model_results/",y,".jpeg"), height = 8, width = 13.5, units = "in")
+      ggsave(final_figure, filename = paste0("output/", y, ".jpeg"), height = 8, width = 13.5, units = "in")
       #  ggsave(final_figure, filename = paste0(figure_location,"Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 11.5, units = "in")
 
 
