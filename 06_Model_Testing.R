@@ -33,6 +33,7 @@ source("functions/dl_snow_data.R")
 
 
 ## Create directories  ---------------------------------------------------------
+figure_location <- "Testing and Calibration/"
 
 output_path <- paste0(figure_location, "model testing/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "model testing/"), showWarnings = FALSE)

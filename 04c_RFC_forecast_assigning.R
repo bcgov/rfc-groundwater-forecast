@@ -30,6 +30,7 @@ source("01_ConfigInputs.R")
 
 
 ## Create directories  ---------------------------------------------------------
+figure_location <- "Testing and Calibration/"
 
 output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)

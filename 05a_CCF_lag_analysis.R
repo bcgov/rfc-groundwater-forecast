@@ -158,6 +158,7 @@ Lag_times <- ccf_data_stats %>%
                 myLocation = Well)
 
 ## Save outputs  ---------------------------------------------------------------
+figure_location <- "Testing and Calibration/"
 
 output_path <- paste0(figure_location, "model calibration/CCF_analysis/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "model calibration/"), showWarnings = FALSE)
