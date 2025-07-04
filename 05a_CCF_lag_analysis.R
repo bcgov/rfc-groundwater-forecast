@@ -33,7 +33,7 @@ source("functions/dl_snow_data.R")
 
 ## Get data --------------------------------------------------------------------
 
-pgown_well_info <- read_csv(paste0(user_input_location, "CCF_lag_analysis_inputs.csv")) %>%
+pgown_well_info <- read_csv(paste0(user_input_location, "testing and calibration/CCF_lag_analysis_inputs.csv")) %>%
   filter(!is.na(Climate_station_Id)) %>%
   mutate(Climate_Infilled_id = ifelse(is.na(Climate_Infilled_id), 0, Climate_Infilled_id),
          Climate_secondary_Infilled = ifelse(is.na(Climate_secondary_Infilled), 0, Climate_secondary_Infilled),
@@ -158,7 +158,7 @@ Lag_times <- ccf_data_stats %>%
                 myLocation = Well)
 
 ## Save outputs  ---------------------------------------------------------------
-figure_location <- "Testing and Calibration/"
+figure_location <- "testing and calibration/"
 
 output_path <- paste0(figure_location, "model calibration/CCF_analysis/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "model calibration/"), showWarnings = FALSE)
@@ -172,7 +172,7 @@ write.csv(Lag_times,
 
 # Merge input file with output to create prep file for Dynamic Weighting analysis
 
-Lag_times_next_step <- read_csv(paste0(user_input_location, "CCF_lag_analysis_inputs.csv")) %>%
+Lag_times_next_step <- read_csv(paste0(user_input_location, "testing and calibration/CCF_lag_analysis_inputs.csv")) %>%
   left_join(Lag_times, by = join_by(Well == myLocation))
 
 write.csv(Lag_times_next_step,

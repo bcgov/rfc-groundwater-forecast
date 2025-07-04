@@ -34,7 +34,7 @@ source("functions/dl_snow_data.R")
 
 
 ## Create directories  ---------------------------------------------------------
-figure_location <- "Testing and Calibration/"
+figure_location <- "testing and calibration/"
 
 output_path <- paste0(figure_location, "model calibration/Dynamic Weighting/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "model calibration/"), showWarnings = FALSE)
@@ -44,7 +44,7 @@ dir.create(output_path, showWarnings = FALSE)
 
 ## Get data --------------------------------------------------------------------
 
-pgown_well_info_all <- read_csv(paste0(user_input_location, "Calibration_Well_inputs.csv")) %>%
+pgown_well_info_all <- read_csv(paste0(user_input_location, "testing and calibration/Calibration_Well_inputs.csv")) %>%
   filter(!is.na(Climate_station_Id) & !is.na(Lag_time)) %>%
   mutate(Climate_Infilled_id = ifelse(is.na(Climate_Infilled_id), 0, Climate_Infilled_id),
          Climate_secondary_Infilled = ifelse(is.na(Climate_secondary_Infilled), 0, Climate_secondary_Infilled),
@@ -137,7 +137,7 @@ combined <- bind_rows(
   })) %>%
   select(Well, DWC_Precip, DWC_Snow)
 
-prep_file <- read_csv(paste0(user_input_location, "Calibration_Well_inputs.csv"))
+prep_file <- read_csv(paste0(user_input_location, "testing and calibration/Calibration_Well_inputs.csv"))
 
 data_out <- left_join(prep_file, combined)
 

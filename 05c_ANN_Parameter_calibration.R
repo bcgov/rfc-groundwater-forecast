@@ -33,7 +33,7 @@ source("functions/dl_snow_data.R")
 
 
 ## Create directories  ---------------------------------------------------------
-figure_location <- "Testing and Calibration/"
+figure_location <- "testing and calibration/"
 
 output_path <- paste0(figure_location, "model calibration/ANN_hyperparameters/", as.character(Sys.Date()))
 dir.create(paste0(figure_location, "model calibration/"), showWarnings = FALSE)
@@ -42,7 +42,7 @@ dir.create(output_path, showWarnings = FALSE)
 
 ## Get data --------------------------------------------------------------------
 
-pgown_well_info_all <- read_csv(paste0(user_input_location, "ANN_hyperparameter_inputs.csv")) %>%
+pgown_well_info_all <- read_csv(paste0(user_input_location, "testing and calibration/ANN_hyperparameter_inputs.csv")) %>%
   filter(!is.na(Climate_station_Id) & !is.na(Lag_time)) %>%
   mutate(Climate_Infilled_id = ifelse(is.na(Climate_Infilled_id), 0, Climate_Infilled_id),
          Climate_secondary_Infilled = ifelse(is.na(Climate_secondary_Infilled), 0, Climate_secondary_Infilled),
@@ -128,7 +128,7 @@ combined <- bind_rows(
   })) %>%
   select(Well, ann_size, ann_decay,	ann_maxit)
 
-prep_file <- read_csv(paste0(user_input_location, "ANN_hyperparameter_inputs.csv")) %>%
+prep_file <- read_csv(paste0(user_input_location, "testing and calibration/ANN_hyperparameter_inputs.csv")) %>%
   mutate(station_name_RF_forecast = "")
 
 data_out <- left_join(prep_file, combined)

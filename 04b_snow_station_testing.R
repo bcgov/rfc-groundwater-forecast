@@ -32,17 +32,17 @@ source("functions/dl_snow_data_testing.R")
 
 
 ## Create directories  ---------------------------------------------------------
-figure_location <- "Testing and Calibration/"
+figure_location <- "testing and calibration/"
 
-output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
+output_path <- paste0(figure_location, "station testing/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "station testing/"), showWarnings = FALSE)
 dir.create(output_path, showWarnings = FALSE)
 
 
 ## Get data for testing---------------------------------------------------------
 
 # Read the well information data
-pgown_well_info_all <- read_csv(paste0(user_input_location, "Climate_station_testing.csv"))
+pgown_well_info_all <- read_csv(paste0(user_input_location, "testing and calibration/Climate_station_testing.csv"))
 
 # Extract distinct regional groups from the well information data
 Regional_group_list <- pgown_well_info_all %>%

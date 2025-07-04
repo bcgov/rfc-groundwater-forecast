@@ -1,3 +1,0 @@
-Well,Regional_group,Region,Location,latitude,longitude,aquifer_id,subtype,Snow_influenced,Training_start_date,Climate_station_Id,Climate_station_me,Climate_Infilled_id,Climate_secondary_Infilled,Climate_tertiary_Infilled,Climate_quaternary_Infilled,snow_stn,Lag_time,DWC_Precip,DWC_Snow
-OW217,test,Penticton,Grand Forks,49.023016,-118.434061,158,1b,1,2004-01-01,1100,BILLINGS,1091,31067,1106,1105. 52938,2F05P,14,10,2
-OW002,test,Surrey,Abbotsford,49.0171,-122.34165,15,4a,0,2004-01-01,810,MISSION WEST ABBEY,702. 50308. 54238,43723,50368,0,1D17P,84,1,

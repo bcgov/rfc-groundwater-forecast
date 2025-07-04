@@ -79,7 +79,7 @@ lapply(pkgs, library, character.only = TRUE)
 # MANUAL INPUTS ----------------------------------------------------------------
 
 # Choose location to save files
-figure_location <- "Output/"
+figure_location <- "output/"
 data_location <- "data/"
 model_path <- "models/"
 user_input_location <- "user_inputs/"
@@ -88,7 +88,7 @@ user_input_location <- "user_inputs/"
 dir.create(figure_location, showWarnings = FALSE)
 dir.create(data_location, showWarnings = FALSE)
 dir.create(model_path, showWarnings = FALSE)
-dir.create(paste0(figure_location, "Model_results"), showWarnings = FALSE)
+# dir.create(paste0(figure_location, "Model_results"), showWarnings = FALSE)
 
 
 # Fill in well information based on location

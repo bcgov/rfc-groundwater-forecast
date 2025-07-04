@@ -32,16 +32,16 @@ source("functions/dl_pgown_wl_data.R")
 
 
 ## Create directories  ---------------------------------------------------------
-figure_location <- "Testing and Calibration/"
+figure_location <- "testing and calibration/"
 
-output_path <- paste0(figure_location, "Station_testing/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "Station_testing/"), showWarnings = FALSE)
+output_path <- paste0(figure_location, "station testing/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "station testing/"), showWarnings = FALSE)
 dir.create(output_path, showWarnings = FALSE)
 
 
 ## Load data -------------------------------------------------------------------
 
-pgown_well_info_all <- read_csv(paste0(user_input_location, "Climate_station_testing.csv"))
+pgown_well_info_all <- read_csv(paste0(user_input_location, "testing and calibration/Climate_station_testing.csv"))
 
 Regional_group_list <- pgown_well_info_all %>%
   dplyr::select(Regional_group) %>%

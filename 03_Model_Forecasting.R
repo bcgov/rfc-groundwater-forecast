@@ -35,8 +35,8 @@ source("functions/dl_ensemble_forecast.R")
 
 ## Create directories  ---------------------------------------------------------
 
-output_path <- paste0(figure_location, "Model_results/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "Model_results/"), showWarnings = FALSE)
+output_path <- paste0(figure_location, "previous_forecasts/", as.character(Sys.Date()))
+dir.create(paste0(figure_location, "/"), showWarnings = FALSE)
 dir.create(output_path, showWarnings = FALSE)
 
 
@@ -89,7 +89,7 @@ for (i in Regional_group_list) {
 
   # Save the csv output
   write_csv(Model_Forecasting_data, paste0(output_path, "/predictive_forecast_results_", i, ".csv"))
-  # write_csv(Model_Forecasting_data, paste0("Output/Model_results/predictive_forecast_results_", i, ".csv"))
+  # write_csv(Model_Forecasting_data, paste0("Output//predictive_forecast_results_", i, ".csv"))
 
 }
 
@@ -111,7 +111,7 @@ data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS o
   left_join(pgown_well_info_all)
 
 write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
-write.csv(data_out, paste0("Output/Model_results/predictive_forecast_results.csv"), row.names = FALSE)
+write.csv(data_out, paste0("Output/predictive_forecast_results.csv"), row.names = FALSE)
 
 
 

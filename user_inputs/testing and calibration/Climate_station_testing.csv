@@ -1,0 +1,146 @@
+Well,Regional_group,Region,Location,latitude,longitude,aquifer_id,Snow_influenced
+OW399,Interior 1,Kamloops,Knutsford,50.5896,-120.30618,276,1
+OW075,Interior 2,Penticton,Keremeos,49.20635,-119.82532,259,1
+OW375,Interior 1,Kamloops,Blue River,52.116147,-119.31344,825,1
+OW268,Vancouver Island 1,Nanaimo,Denman Island,49.53466,-124.76883,740,0
+OW310,Vancouver Island 1,Nanaimo,Bowser,49.448724,-124.716175,416,0
+OW288,Vancouver Island 2,Nanaimo,Hornby Island,49.506,-124.64873,438,0
+OW371,Vancouver Island 2,Nanaimo,Hwy 19A (T'Sable River ),49.51874,-124.83962,415,0
+OW426,Vancouver Island 3,Nanaimo,Qualicum,49.36456,-124.61434,662,0
+OW306,Interior 2,Penticton,Beaverdell,49.438271,-119.086497,482,1
+OW390,Vancouver Island 1,Nanaimo,Cedar,49.108143,-123.823252,162,0
+OW436,Vancouver Island 1,Nanaimo,Cassidy,49.045399,-123.874614,160,0
+OW432,Vancouver Island 3,Nanaimo,Yellowpoint,49.05833,-123.80978,162,0
+OW435,Vancouver Island 3,Nanaimo,South Wellington,49.096728,-123.888749,165,0
+OW349,Coastal 1,Surrey,Belcarra,49.32042,-122.90234,68,0
+OW200,Northern,Smithers,Dease Lake,58.43794,-129.9923,828,1
+OW217,Interior 2,Penticton,Grand Forks,49.023016,-118.434061,158,1
+OW035,Interior 1,Kamloops,Stump Lake,50.39353,-120.32752,1174,1
+OW363,Interior 3,Penticton,Wasa,49.79076,-115.74855,540,1
+OW081,Interior 1,Kamloops,83 Mile,51.43115,-121.38021,124,1
+OW332,Interior 2,Penticton,Oliver,49.137819,-119.569162,254,1
+OW405,Interior 2,Penticton,Oliver,49.16931,-119.5639,256,1
+OW407,Interior 3,Penticton,Oliver,49.21599,-119.54109,255,1
+OW428,Vancouver Island 1,Nanaimo,Cowichan,48.79051,-123.95995,NA,0
+OW429,Vancouver Island 1,Nanaimo,Cowichan,48.790505,-123.959954,178,0
+OW459,Coastal 1,Surrey,Chilliwack,49.110477,-121.998289,8,1
+OW487,Interior 2,Penticton,Lumby,50.219445,-119.003821,314,1
+OW437,Vancouver Island 1,imo,Cassidy,49.045426,-123.874615,161,0
+OW337,Vancouver Island 2,imo,Ladysmith,49.036948,-123.828877,162,0
+OW281,Vancouver Island 3,imo,Saltspring Island,48.85179,-123.45708,721,0
+OW292,Coastal 2,Surrey,Powell River,49.77559,-124.40106,836,0
+OW422,Interior 1,Kamloops,Logan Lake,50.48783,-120.82906,822,1
+OW369,Vancouver Island 1,Nanaimo,Black Creek Gravel Pit,49.87834,-125.26389,NA,0
+OW383,Vancouver Island 2,Nanaimo,Quadra Island,50.055599,-125.189118,751,0
+OW376,Interior 1,Kamloops,Junction Sheep Range Park,51.79912,-122.4505,NA,1
+OW185,Interior 1,Kamloops,Salmon River,50.510924,-119.354275,97,1
+OW381,Interior 1,Kamloops,Canoe Creek,50.652616,-119.20174,108,1
+OW464,Interior 1,Kamloops,Canoe Creek,50.65262,-119.20195,109,1
+OW320,Vancouver Island 1,Nanaimo,Cobble Hill,48.69892,-123.58202,197,0
+OW258,Vancouver Island 2,Nanaimo,Galiano Island,48.87386,-123.32605,320,0
+OW283,Vancouver Island 2,Nanaimo,Pender Island,48.81503,-123.31447,711,0
+OW327,Vancouver Island 2,Nanaimo,Galiano Island,48.885558,-123.334866,320,0
+OW373,Vancouver Island 3,Nanaimo,Saltspring Island,48.83867,-123.51075,722,0
+OW438,Vancouver Island 3,Nanaimo,Salt Spring Island,48.89015,-123.50125,721,0
+OW117,Interior 2,Penticton,Armstrong,50.427103,-119.227723,1155,1
+OW384,Interior 3,Penticton,Spallumcheen,50.499953,-119.211984,102,1
+OW409,Interior 3,Penticton,Spallumcheen,50.510481,-119.225923,103,1
+OW412,Interior 3,Penticton,Summerland,49.734442,-120.156664,1264,1
+OW329,Vancouver Island 3,Nanaimo,Ucluelet,48.994962,-125.59433,159,0
+OW374,Interior 1,Kamloops,108 Mile,51.748824,-121.377389,131,1
+OW460,Coastal 1,Surrey,Gibsons,49.401641,-123.520065,560,0
+OW490,Coastal 1,Surrey,Langley,49.14763,-122.53144,24,1
+OW463,Coastal 2,Surrey,Mission,49.220192,-122.379292,884,0
+OW474,Coastal 2,Surrey,Miracle Valley,49.23549,-122.23649,25,0
+OW479,Coastal 2,Surrey,Maple Ridge,49.18354,-122.45753,19,0
+OW491,Coastal 2,Surrey,Maple Ridge,49.19573,-122.47144,26,0
+OW502,Northern,Prince George,Valemount,52.81655,-119.27067,800,1
+OW455,Northern,Prince George,Vanderhoof,54.02345,-124.31642,242,1
+OW309,Interior 2,Penticton,Golden,51.25933,-116.91873,450,1
+OW201,Vancouver Island 1,Nanaimo,Alert Bay,50.58197,-126.92605,858,0
+OW262,Interior 2,Penticton,Kelow,49.860097,-119.421006,464,1
+OW204,Vancouver Island 1,Nanaimo,Duncan,48.77047,-123.69335,186,0
+OW355,Vancouver Island 1,Nanaimo,Chemainus,48.87472,-123.70362,172,0
+OW430,Vancouver Island 1,Nanaimo,Cowichan,48.75567,-123.72598,198,0
+OW431,Vancouver Island 1,Nanaimo,Cowichan,48.75567,-123.72598,199,0
+OW488,Vancouver Island 1,Nanaimo,Cowichan,48.72946,-123.66332,197,0
+OW287,Vancouver Island 1,Nanaimo,Coombs,49.301596,-124.415168,220,0
+OW424,Vancouver Island 1,Nanaimo,Coombs,49.314,-124.40842,1250,0
+OW304,Vancouver Island 2,Nanaimo,Parksville,49.310444,-124.330671,216,0
+OW314,Vancouver Island 2,Nanaimo,Parksville,49.31149,-124.34853,216,0
+OW391,Vancouver Island 2,Nanaimo,Little Qualicum,49.32983,-124.56006,662,0
+OW395,Vancouver Island 2,Nanaimo,noose,49.28029,-124.28061,219,0
+OW398,Vancouver Island 2,Nanaimo,Parksville,49.307161,-124.311776,216,0
+OW321,Vancouver Island 3,Nanaimo,Qualicum Beach,49.34769,-124.38281,1250,0
+OW389,Vancouver Island 3,Nanaimo,Qualicum Beach,49.35992,-124.47597,664,0
+OW433,Vancouver Island 3,Nanaimo,Qualicum,49.34244,-124.40625,1250,0
+OW434,Vancouver Island 3,Nanaimo,Qualicum,49.34232,-124.40714,217,0
+OW451,Coastal 1,Surrey,Hope,49.36575,-121.48121,1,1
+OW260,Interior 1,Kamloops,Quesnel,52.96489,-122.46749,115,1
+OW058,Vancouver Island 3,Nanaimo,Saanich,48.63119,-123.41753,610,0
+OW338,Vancouver Island 3,Nanaimo,Saanich,48.57242,-123.41726,608,0
+OW343,Vancouver Island 3,Nanaimo,Saanich,48.599,-123.445816,608,0
+OW416,Northern,Fort St. John,Dawson Creek,55.82529,-120.97583,595,1
+OW125,Vancouver Island 2,Nanaimo,Mayne Island,48.84274,-123.27493,620,0
+OW128,Vancouver Island 2,Nanaimo,Mayne Island,48.86903,-123.28269,447,0
+OW284,Vancouver Island 2,Nanaimo,Pender Island,48.74882,-123.25686,720,0
+OW290,Vancouver Island 3,Nanaimo,Satur Island,48.80294,-123.17863,737,0
+OW293,Northern,Prince George,Prince George,54.0472,-122.8038,332,1
+OW316,Vancouver Island 1,Nanaimo,Gabriola Island,49.138625,-123.767724,709,0
+OW385,Vancouver Island 1,Nanaimo,Gabriola Island,49.180666,-123.826884,709,0
+OW196,Vancouver Island 2,Nanaimo,Gabriola Island,49.16994,-123.80128,709,0
+OW197,Vancouver Island 2,Nanaimo,Gabriola Island,49.15638,-123.7652,709,0
+OW392,Vancouver Island 2,Nanaimo,noose,49.27794,-124.24362,1098,0
+OW393,Vancouver Island 2,Nanaimo,noose,49.27794,-124.24362,219,0
+OW394,Vancouver Island 2,Nanaimo,noose,49.30096,-124.19139,218,0
+OW396,Vancouver Island 2,Nanaimo,noose,49.30131,-124.22964,219,0
+OW294,Interior 2,Penticton,Lumby,50.219595,-119.003824,316,1
+OW311,Interior 3,Penticton,Vernon,50.320322,-119.202478,351,1
+OW411,Interior 3,Penticton,West Kelow,49.83667,-119.68638,304,1
+OW452,Coastal 1,Surrey,Langley,49.167753,-122.584482,37,1
+OW456,Coastal 1,Surrey,Langley,49.158707,-122.651309,59,0
+OW354,Coastal 2,Surrey,Langley,49.09392,-122.56474,35,0
+OW453,Coastal 2,Surrey,Langley,49.13393,-122.55637,35,0
+OW447,Coastal 3,Surrey,Surrey,49.18456,-122.75323,61,0
+OW454,Coastal 2,Surrey,Squamish,49.83479,-123.15197,401,1
+OW483,Coastal 2,Surrey,Squamish,49.72254,-123.07491,397,0
+OW154,Interior 3,Penticton,Summerland,49.57765,-119.63526,297,1
+OW353,Coastal 2,Surrey,Langley,49.06717,-122.67997,41,0
+OW360,Coastal 2,Surrey,Langley,49.04074,-122.67138,41,0
+OW446,Coastal 2,Surrey,Langley,49.0188,-122.65452,52,0
+OW275,Coastal 3,Surrey,Surrey,49.06754,-122.68439,41,0
+OW071,Vancouver Island 3,Nanaimo,Saanich,48.5304,-123.37483,616,0
+OW467,Interior 2,Penticton,Osoyoos,49.02232,-119.42551,194,1
+OW401,Interior 3,Penticton,Osoyoos,49.023341,-119.363599,808,1
+OW402,Interior 3,Penticton,Osoyoos,49.030404,-119.347269,936,1
+OW406,Coastal 1,Surrey,Chilliwack,49.12231,-121.97352,8,0
+OW448,Coastal 1,Surrey,Agassiz,49.244304,-121.785054,4,1
+OW449,Coastal 1,Surrey,Agassiz,49.235153,-121.747747,4,1
+OW450,Coastal 1,Surrey,Chilliwack,49.16495,-121.91194,6,0
+OW074,Interior 2,Penticton,Castlegar,49.31035,-117.61339,507,1
+OW417,Northern,Fort St. John,Dawson Creek,55.83334,-120.871105,595,1
+OW418,Northern,Fort St. John,Dawson Creek,55.909962,-120.453375,633,1
+OW080,Interior 1,Kamloops,Clinton,51.07193,-121.5852,921,1
+OW442,Interior 2,Penticton,Kelow,49.950925,-119.365802,464,1
+OW356,Interior 3,Penticton,Winfield,50.008442,-119.3918,344,1
+OW351,Vancouver Island 1,Nanaimo,Comox,49.71725,-124.92994,408,0
+OW261,Interior 1,Kamloops,Williams Lake,52.09645,-122.11943,148,1
+OW289,Interior 1,Kamloops,Williams Lake,52.175985,-122.083552,139,1
+OW291,Interior 2,Penticton,Cranbrook,49.473055,-115.718887,523,1
+OW468,Interior 2,Penticton,Cranbrook,49.51528,-115.770422,525,1
+OW513,Northern,Smithers,Terrace,54.5177,-128.63653,575,1
+OW002,Coastal 1,Surrey,Abbotsford,49.0171,-122.34165,15,0
+OW008,Coastal 1,Surrey,Abbotsford,49.01696,-122.2894,15,0
+OW255,Coastal 1,Surrey,Chilliwack,49.07409,-122.05764,1216,0
+OW299,Coastal 1,Surrey,Abbotsford,49.04214,-122.38148,15,0
+OW301,Coastal 1,Surrey,Abbotsford,49.03127,-122.43471,15,0
+OW357,Coastal 1,Surrey,Abbotsford,49.11834,-122.38712,29,0
+OW492,Coastal 1,Surrey,Columbia Valley,49.02244,-122.05063,20,0
+OW359,Coastal 2,Surrey,Langley,49.06252,-122.55919,33,0
+OW361,Coastal 2,Surrey,Langley,49.05044,-122.46313,27,0
+OW414,Coastal 2,Surrey,Langley,49.06537,-122.54718,1144,0
+OW415,Coastal 2,Surrey,Langley,49.06537,-122.54718,33,0
+OW458,Coastal 2,Surrey,Langley,49.046826,-122.487051,27,0
+OW403,Interior 3,Penticton,Twin Lakes,49.33003,-119.72338,261,1
+OW060,Vancouver Island 3,Nanaimo,Saanich,48.65863,-123.4304,609,0
+OW240,Vancouver Island 3,Nanaimo,Saanich,48.63667,-123.46583,608,0
