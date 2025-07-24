@@ -83,6 +83,7 @@ for (i in Regional_group_list) {
   Model_Forecasting_data <- forecast_model(Time_series_data, forecast_days,
                                            num_cores, figure_location, output_path,
                                            model_path, data_location, pgown_well_info,
+                                           rfc_forecast_include,
                                            ensemble_forecast_data, deterministic_forecast_data,
                                            Missing_date_window, rfc_forecast_date_window)
 

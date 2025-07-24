@@ -119,6 +119,9 @@ Missing_date_window <- 3
 
 rfc_forecast_date_window <- 3
 
+rfc_forecast_include <- c("deterministic", "ensemble")
+# rfc_forecast_include <- NA
+
 # OPTIONS ----------------------------------------------------------------
 
 options(digits = 3, scipen = 5, warn = 0, timeout = 1200)
