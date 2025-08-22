@@ -168,7 +168,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
         # Preprocess temp
         temp2 <- temp %>%
           mutate(lag_day = x, #forcast interval
-                 Date_predicted = lead(Date,x),
+                 Date_predicted = lead(Date, x),
                  precipitation_lag = rollsum(total_precip, lag_period, fill = NA, align = 'right', na.rm = TRUE), #recharge lagging precipitation
                  mean_temp_lag = rollmean(mean_temp, lag_period, fill = NA, align = 'right', na.rm = TRUE), # recharge lagging temperature
                  groundwater_predict = lead(groundwater, x), # actual groundwater level we are predicting
@@ -214,11 +214,11 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
             mutate(lag_day = x, #forcast interval
                    Date_predicted = lead(Date,x)
             ) %>%
-            mutate(lag_day_adjusted = (x-lag_period)) %>%
-            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-            mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-            mutate(weighted_lead = lead(total_precip,i)*normal_weight) %>%
+            mutate(lag_day_adjusted = (x - lag_period)) %>%
+            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+            mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+            mutate(weighted_lead = lead(total_precip, i) * normal_weight) %>%
             dplyr::select( # only select variables of interest remove others
               Date,
               Date_predicted,
@@ -234,7 +234,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
         lead_data <- map_dfr(1:x, calculate_weighted_lead, x = x, lag_period = lag_period, a_coeff = a_coeff)
 
 
-        lead_data <-   lead_data %>%
+        lead_data <- lead_data %>%
           group_by(# only select variables of interest remove others
             Date,
             Date_predicted,
@@ -248,19 +248,19 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
         lag_data <- data.frame()
 
-        lag_period_length = lag_period*3
+        lag_period_length = lag_period * 3
 
         calculate_weighted_lag <- function(i, lag_period, a_coeff) {
 
           temp %>%
             mutate(lag_day = x, #forcast interval
-                   Date_predicted = lead(Date,x)
+                   Date_predicted = lead(Date, x)
             ) %>%
-            mutate(lag_day_adjusted = lag_period -x) %>%
-            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-            mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-            mutate(weighted_lag = lag(total_precip,i)*normal_weight) %>%
+            mutate(lag_day_adjusted = lag_period - x) %>%
+            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+            mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+            mutate(weighted_lag = lag(total_precip, i) * normal_weight) %>%
             dplyr::select( # only select variables of interest remove others
               Date,
               Date_predicted,
@@ -310,14 +310,14 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
                  max_groundwater_diff = max(groundwater_diff, na.rm = TRUE),
                  min_groundwater_diff = min(groundwater_diff, na.rm = TRUE)
           ) %>%
-          mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                 precipitation_lag = (precipitation_lag - min_precipitation_lag)/(max_precipitation_lag-min_precipitation_lag),
-                 mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
-                 mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
-                 groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                 actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                 groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
-                 groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff)
+          mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                 precipitation_lag = (precipitation_lag - min_precipitation_lag) / (max_precipitation_lag - min_precipitation_lag),
+                 mean_temp_lag = (mean_temp_lag - min_mean_temp_lag) / (max_mean_temp_lag - min_mean_temp_lag),
+                 mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead),
+                 groundwater = (groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                 actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                 groundwater_predict =  (groundwater_predict - min_groundwater) / (max_groundwater - min_groundwater),
+                 groundwater_diff =  (groundwater_diff - min_groundwater_diff) / (max_groundwater_diff - min_groundwater_diff)
           )
 
         temp2_original <- temp2
@@ -329,7 +329,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
         temp2_2 <- temp2 %>%
           mutate(Date >= Training_start) %>%
-          drop_na(groundwater,groundwater_diff, groundwater_predict, mean_temp_lag, mean_temp_lead,  precipitation_lag ,precip_lead) %>%
+          drop_na(groundwater, groundwater_diff, groundwater_predict, mean_temp_lag, mean_temp_lead,  precipitation_lag ,precip_lead) %>%
           filter(year(Date) != year(Sys.Date()))
 
 
@@ -397,23 +397,23 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
           temp %>%
             mutate(lag_day = x, #forcast interval
-                   Date_predicted = lead(Date,x),
+                   Date_predicted = lead(Date, x),
                    SWE_lag = lag(SWE, 1), #Snow level at rechrage lag period
-                   SWE_lead = lead(SWE,1)
+                   SWE_lead = lead(SWE, 1)
             ) %>%
             mutate(
               SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
               SWE_lead_diff =  SWE_lead - SWE) %>%
-            mutate(lag_day_adjusted = (x- lag_period)) %>%
-            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-            mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-            mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-            mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-            mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-            mutate(weighted_lead = lead(total_precip,i)*normal_weight,
-                   weighted_lead_temp = lead(mean_temp,i)*normal_weight2,
-                   weighted_lead_SWE = lead(SWE_lead_diff,i)*normal_weight2) %>%
+            mutate(lag_day_adjusted = (x - lag_period)) %>%
+            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+            mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+            mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+            mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+            mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+            mutate(weighted_lead = lead(total_precip, i) * normal_weight,
+                   weighted_lead_temp = lead(mean_temp, i) * normal_weight2,
+                   weighted_lead_SWE = lead(SWE_lead_diff, i) * normal_weight2) %>%
             dplyr::select( # only select variables of interest remove others
               Date,
               Date_predicted,
@@ -444,29 +444,29 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-        lag_period_length = lag_period*3
+        lag_period_length = lag_period * 3
 
         calculate_weighted_lag <- function(i, lag_period, a_coeff) {
 
           temp %>%
             mutate(lag_day = x, #forcast interval
-                   Date_predicted = lead(Date,x),
+                   Date_predicted = lead(Date, x),
                    SWE_lag = lag(SWE, 1), #Snow level at rechrage lag period
-                   SWE_lead = lead(SWE,1)
+                   SWE_lead = lead(SWE, 1)
             ) %>%
             mutate(
               SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
               SWE_lead_diff =  SWE_lead - SWE) %>%
-            mutate(lag_day_adjusted = lag_period -x) %>%
-            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-            mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-            mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-            mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-            mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-            mutate(weighted_lag = lag(total_precip,i)*normal_weight,
-                   weighted_lag_temp = lag(mean_temp,i)*normal_weight2,
-                   weighted_lag_SWE = lag(SWE_lead_diff,i)*normal_weight2) %>%
+            mutate(lag_day_adjusted = lag_period - x) %>%
+            mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+            mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+            mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+            mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+            mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+            mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+            mutate(weighted_lag = lag(total_precip, i) * normal_weight,
+                   weighted_lag_temp = lag(mean_temp, i) * normal_weight2,
+                   weighted_lag_SWE = lag(SWE_lead_diff, i) * normal_weight2) %>%
             dplyr::select( # only select variables of interest remove others
               Date,
               Date_predicted,
@@ -484,7 +484,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
         lag_data <- map_dfr(1:(lag_period * 3), calculate_weighted_lag, lag_period = lag_period, a_coeff = a_coeff)
 
-        lag_data <-   lag_data %>%
+        lag_data <- lag_data %>%
           group_by(# only select variables of interest remove others
             Date,
             Date_predicted,
@@ -530,16 +530,16 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
                  max_groundwater_diff = max(groundwater_diff, na.rm = TRUE),
                  min_groundwater_diff = min(groundwater_diff, na.rm = TRUE)
           ) %>%
-          mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                 precipitation_lag = (precipitation_lag - min_precipitation_lag)/(max_precipitation_lag-min_precipitation_lag),
-                 SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff)/(max_SWE_lead_diff-min_SWE_lead_diff),
-                 SWE_lag_diff = (SWE_lag_diff - min_SWE_lag_diff)/(max_SWE_lag_diff-min_SWE_lag_diff),
-                 mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
-                 mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
-                 groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                 actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                 groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
-                 groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff))
+          mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                 precipitation_lag = (precipitation_lag - min_precipitation_lag) / (max_precipitation_lag - min_precipitation_lag),
+                 SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff) / (max_SWE_lead_diff - min_SWE_lead_diff),
+                 SWE_lag_diff = (SWE_lag_diff - min_SWE_lag_diff) / (max_SWE_lag_diff - min_SWE_lag_diff),
+                 mean_temp_lag = (mean_temp_lag - min_mean_temp_lag) / (max_mean_temp_lag - min_mean_temp_lag),
+                 mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead),
+                 groundwater = (groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                 actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                 groundwater_predict =  (groundwater_predict - min_groundwater) / (max_groundwater - min_groundwater),
+                 groundwater_diff =  (groundwater_diff - min_groundwater_diff) / (max_groundwater_diff - min_groundwater_diff))
 
 
 
@@ -552,7 +552,7 @@ forecast_model_training <- function(Time_series_data, forecast_days, num_cores,
 
         temp2_2 <- temp2 %>%
           mutate(Date >= Training_start) %>%
-          drop_na(groundwater,groundwater_diff, groundwater_predict, mean_temp_lag, mean_temp_lead,  precipitation_lag ,precip_lead ,SWE,SWE_lag_diff,SWE_lead_diff) %>%
+          drop_na(groundwater,groundwater_diff, groundwater_predict, mean_temp_lag, mean_temp_lead, precipitation_lag, precip_lead, SWE, SWE_lag_diff, SWE_lead_diff) %>%
           filter(year(Date) != year(Sys.Date()))
 
 

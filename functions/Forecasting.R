@@ -14,7 +14,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
            Month = month(Date),
            Day = day(Date),
            year = year(Date)) %>%
-    filter(Date < (Sys.Date() + max(forecast_days) + 7)-years(1)) %>% # remove current year from plot
+    filter(Date < (Sys.Date() + max(forecast_days) + 7) - years(1)) %>% # remove current year from plot
     #filter(Date <= as.Date("2023-12-31")) %>%
     # group_by(days_in_year, Well) %>%
     filter(Month != 2 | Day != 29) %>%
@@ -87,6 +87,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                     #y= "OW002"
                     #y= "OW406"
                     #y= "OW275"
+                    #y= "OW255"
                     # y = Well_list[1]
 
 
@@ -178,7 +179,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         mutate(lag_day = ifelse(per_name == "comb_perf_value_14", 14,
                                                 ifelse(per_name == "comb_perf_value_30", 30,
                                                        ifelse(per_name == "comb_perf_value_60", 60,
-                                                              ifelse(per_name == "comb_perf_value_90", 90,NA))))) %>%
+                                                              ifelse(per_name == "comb_perf_value_90", 90, NA))))) %>%
                         dplyr::select(Well, lag_day,performance)
 
 
@@ -290,13 +291,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             temp %>%
 
                               mutate(lag_day = x, #forcast interval
-                                     Date_predicted = lead(Date,x)
+                                     Date_predicted = lead(Date, x)
                               ) %>%
-                              mutate(lag_day_adjusted = (x-lag_period)) %>%
-                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                              mutate(weighted_lead = lead(total_precip,i)*normal_weight) %>%
+                              mutate(lag_day_adjusted = (x - lag_period)) %>%
+                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                              mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                              mutate(weighted_lead = lead(total_precip, i) *normal_weight) %>%
                               dplyr::select( # only select variables of interest remove others
                                 Date,
                                 Date_predicted,
@@ -333,13 +334,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             temp %>%
 
                               mutate(lag_day = x, #forcast interval
-                                     Date_predicted = lead(Date,x)
+                                     Date_predicted = lead(Date, x)
                               ) %>%
-                              mutate(lag_day_adjusted = lag_period -x) %>%
-                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                              mutate(weighted_lag = lag(total_precip,i)*normal_weight) %>%
+                              mutate(lag_day_adjusted = lag_period - x) %>%
+                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                              mutate(weighted_lag = lag(total_precip, i) * normal_weight) %>%
                               dplyr::select( # only select variables of interest remove others
                                 Date,
                                 Date_predicted,
@@ -389,14 +390,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                    max_groundwater_diff = max(groundwater_diff, na.rm = TRUE),
                                    min_groundwater_diff = min(groundwater_diff, na.rm = TRUE)
                             ) %>%
-                            mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                                   precipitation_lag = (precipitation_lag - min_precipitation_lag)/(max_precipitation_lag-min_precipitation_lag),
-                                   mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
-                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
-                                   groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                                   groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
-                                   groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff)
+                            mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                                   precipitation_lag = (precipitation_lag - min_precipitation_lag) / (max_precipitation_lag - min_precipitation_lag),
+                                   mean_temp_lag = (mean_temp_lag - min_mean_temp_lag) / (max_mean_temp_lag - min_mean_temp_lag),
+                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead),
+                                   groundwater = (groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                                   groundwater_predict =  (groundwater_predict - min_groundwater) / (max_groundwater - min_groundwater),
+                                   groundwater_diff =  (groundwater_diff - min_groundwater_diff) / (max_groundwater_diff - min_groundwater_diff)
                             )
 
 
@@ -406,7 +407,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                          model_file <- paste0(model_path,"ANN_Model_",y,"_",x,".Rdata")
+                          model_file <- paste0(model_path, "ANN_Model_",y, "_",x, ".Rdata")
                           load(model_file)
 
                           # Calculate the mean and standard deviation of the variables by day
@@ -437,7 +438,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                           monte_carlo_df <- monte_carlo_df %>%
                             dplyr::select(days_in_year, precip_lead, mean_temp_lead) %>%
-                            mutate(precip_lead = precip_lead/x, mean_temp_lead = mean_temp_lead)
+                            mutate(precip_lead = precip_lead / x, mean_temp_lead = mean_temp_lead)
 
 
                           last_date <- temp2_original %>%
@@ -465,7 +466,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             # p = 1
                             temp_fc <- data.frame(
                               Well = unlist(y),
-                              Date = as.Date(last_date+p),
+                              Date = as.Date(last_date + p),
                               Snow_influenced =  unique(temp$Snow_influenced),
                               groundwater_period_average = unique(temp$groundwater_period_average)
                             )
@@ -488,7 +489,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                   ("deterministic" %in% rfc_forecast_include)) {# no deterministic but ensemble
 
 
-                                temp_forcast2 <- full_join(deterministic_forecast_data_y,ensemble_forecast_data_z)
+                                temp_forcast2 <- full_join(deterministic_forecast_data_y, ensemble_forecast_data_z)
                               } else {
 
                                 temp_forcast2 <- ensemble_forecast_data_z
@@ -496,8 +497,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                               temp_forcast2_2 <- temp_forcast2 %>%
                                 dplyr::select(-en_sim) %>%
-                                mutate(days_in_year = yday(Date+x))
-                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2 )
+                                mutate(days_in_year = yday(Date + x))
+                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2)
 
 
                               temp_forcast3_2  <- temp_forcast3 %>%
@@ -515,10 +516,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -535,8 +536,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 ("deterministic" %in% rfc_forecast_include)) {# deterministic and no ensemble
 
                               temp_forcast2_2 <- deterministic_forecast_data_y %>%
-                                mutate(days_in_year = yday(Date+x))
-                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2 )
+                                mutate(days_in_year = yday(Date + x))
+                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2)
 
                               temp_forcast3_2  <- temp_forcast3 %>%
                                 mutate(joiner = 1) %>%
@@ -553,10 +554,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -583,10 +584,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lead_num, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -615,8 +616,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             mutate(joiner = 1) %>%
                             mutate(Date_predicted = Date + x) %>%
                             full_join(temp_forcast4) %>%
-                            mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead))
+                            mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead))
 
 
                           # Filter the DataFrame by the last date -- and combine with percentiles
@@ -707,23 +708,23 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                             temp %>%
                               mutate(lag_day = x, #forcast interval
-                                     Date_predicted = lead(Date,x),
+                                     Date_predicted = lead(Date, x),
                                      SWE_lag = lag(SWE, 1), #Snow level at rechrage lag period
                                      SWE_lead = lead(SWE,1)
                               ) %>%
                               mutate(
-                                SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
-                                SWE_lead_diff =  SWE_lead - SWE) %>%
-                              mutate(lag_day_adjusted = (x- lag_period)) %>%
-                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-                              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-                              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-                              mutate(weighted_lead = lead(total_precip,i)*normal_weight,
-                                     weighted_lead_temp = lead(mean_temp,i)*normal_weight2,
-                                     weighted_lead_SWE = lead(SWE_lead_diff,i)*normal_weight2) %>%
+                                SWE_lag_diff = SWE - SWE_lag, #snowmelt that occured during lag period
+                                SWE_lead_diff = SWE_lead - SWE) %>%
+                              mutate(lag_day_adjusted = (x - lag_period)) %>%
+                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                              mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+                              mutate(weighted_lead = lead(total_precip, i) * normal_weight,
+                                     weighted_lead_temp = lead(mean_temp, i) * normal_weight2,
+                                     weighted_lead_SWE = lead(SWE_lead_diff, i) * normal_weight2) %>%
                               dplyr::select( # only select variables of interest remove others
                                 Date,
                                 Date_predicted,
@@ -761,23 +762,23 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                             temp %>%
                               mutate(lag_day = x, #forcast interval
-                                     Date_predicted = lead(Date,x),
+                                     Date_predicted = lead(Date, x),
                                      SWE_lag = lag(SWE, 1), #Snow level at rechrage lag period
-                                     SWE_lead = lead(SWE,1)
+                                     SWE_lead = lead(SWE, 1)
                               ) %>%
                               mutate(
-                                SWE_lag_diff =  SWE - SWE_lag, #snowmelt that occured during lag period
-                                SWE_lead_diff =  SWE_lead - SWE) %>%
-                              mutate(lag_day_adjusted = lag_period -x) %>%
-                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-                              mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                              mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-                              mutate(weighted_lag = lag(total_precip,i)*normal_weight,
-                                     weighted_lag_temp = lag(mean_temp,i)*normal_weight2,
-                                     weighted_lag_SWE = lag(SWE_lead_diff,i)*normal_weight2) %>%
+                                SWE_lag_diff = SWE - SWE_lag, #snowmelt that occured during lag period
+                                SWE_lead_diff = SWE_lead - SWE) %>%
+                              mutate(lag_day_adjusted = lag_period - x) %>%
+                              mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                              mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                              mutate(normal_weight = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                              mutate(normal_weight2 = dnorm(i, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+                              mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                              mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+                              mutate(weighted_lag = lag(total_precip, i) * normal_weight,
+                                     weighted_lag_temp = lag(mean_temp, i) * normal_weight2,
+                                     weighted_lag_SWE = lag(SWE_lead_diff, i) * normal_weight2) %>%
                               dplyr::select( # only select variables of interest remove others
                                 Date,
                                 Date_predicted,
@@ -810,7 +811,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                           lead_data_lag <- full_join(lead_data, lag_data)
 
-                          temp2 <- full_join(temp2,lead_data_lag)
+                          temp2 <- full_join(temp2, lead_data_lag)
 
                           temp2 <- temp2 %>%
                             mutate(precip_lead_org = precip_lead,
@@ -841,16 +842,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                    max_groundwater_diff = max(groundwater_diff, na.rm = TRUE),
                                    min_groundwater_diff = min(groundwater_diff, na.rm = TRUE)
                             ) %>%
-                            mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                                   precipitation_lag = (precipitation_lag - min_precipitation_lag)/(max_precipitation_lag-min_precipitation_lag),
-                                   SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff)/(max_SWE_lead_diff-min_SWE_lead_diff),
-                                   SWE_lag_diff = (SWE_lag_diff - min_SWE_lag_diff)/(max_SWE_lag_diff-min_SWE_lag_diff),
-                                   mean_temp_lag = (mean_temp_lag - min_mean_temp_lag)/(max_mean_temp_lag-min_mean_temp_lag),
-                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
-                                   groundwater = (groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater)/(max_groundwater-min_groundwater),
-                                   groundwater_predict =  (groundwater_predict - min_groundwater)/(max_groundwater-min_groundwater),
-                                   groundwater_diff =  (groundwater_diff - min_groundwater_diff)/(max_groundwater_diff-min_groundwater_diff))
+                            mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                                   precipitation_lag = (precipitation_lag - min_precipitation_lag) / (max_precipitation_lag - min_precipitation_lag),
+                                   SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff) / (max_SWE_lead_diff - min_SWE_lead_diff),
+                                   SWE_lag_diff = (SWE_lag_diff - min_SWE_lag_diff) / (max_SWE_lag_diff - min_SWE_lag_diff),
+                                   mean_temp_lag = (mean_temp_lag - min_mean_temp_lag) / (max_mean_temp_lag - min_mean_temp_lag),
+                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead),
+                                   groundwater = (groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                                   actual_predicted_groundwater = (actual_predicted_groundwater - min_groundwater) / (max_groundwater - min_groundwater),
+                                   groundwater_predict =  (groundwater_predict - min_groundwater) / (max_groundwater - min_groundwater),
+                                   groundwater_diff =  (groundwater_diff - min_groundwater_diff) / (max_groundwater_diff - min_groundwater_diff))
 
 
 
@@ -894,10 +895,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             )
 
                           monte_carlo_df <- monte_carlo_df %>%
-                            dplyr::select(days_in_year, precip_lead, mean_temp_lead,SWE_lead_diff) %>%
-                            mutate(precip_lead = precip_lead/x,
+                            dplyr::select(days_in_year, precip_lead, mean_temp_lead, SWE_lead_diff) %>%
+                            mutate(precip_lead = precip_lead / x,
                                    mean_temp_lead = mean_temp_lead,
-                                   SWE_lead_diff = SWE_lead_diff/x)
+                                   SWE_lead_diff = SWE_lead_diff / x)
 
 
                           last_date <- temp2_original%>%
@@ -934,7 +935,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                             temp_fc <- temp_fc %>%
-                              mutate(days_in_year = yday(Date+x))
+                              mutate(days_in_year = yday(Date + x))
 
                             temp_forcast <- rbind(temp_forcast, temp_fc)
 
@@ -956,16 +957,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                               if ((Sys.Date() - deterministic_forecast_data_y_prediction_date <= rfc_forecast_date_window) &&
                                   ("deterministic" %in% rfc_forecast_include)) {# no deterministic but ensemble
 
-                                temp_forcast2 <- full_join(deterministic_forecast_data_y,ensemble_forecast_data_z)
+                                temp_forcast2 <- full_join(deterministic_forecast_data_y, ensemble_forecast_data_z)
                               } else {
                                 temp_forcast2 <- ensemble_forecast_data_z
                               }
 
                               temp_forcast2_2 <- temp_forcast2 %>%
                                 dplyr::select(-en_sim) %>%
-                                mutate(days_in_year = yday(Date+x))
+                                mutate(days_in_year = yday(Date + x))
 
-                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2 )
+                              temp_forcast3 <- full_join(temp_forcast, temp_forcast2_2)
 
 
 
@@ -984,16 +985,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(lag_day_adjusted = (x- lag_period)) %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-                                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
-                                mutate(mean_temp = mean_temp*normal_weight2) %>%
-                                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
+                                mutate(lag_day_adjusted = (x - lag_period)) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+                                mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
+                                mutate(mean_temp = mean_temp * normal_weight2) %>%
+                                mutate(SWE_lead_diff = SWE_lead_diff * normal_weight2) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -1030,16 +1031,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(lag_day_adjusted = (x- lag_period)) %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-                                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
-                                mutate(mean_temp = mean_temp*normal_weight2) %>%
-                                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
+                                mutate(lag_day_adjusted = (x - lag_period)) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+                                mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
+                                mutate(mean_temp = mean_temp * normal_weight2) %>%
+                                mutate(SWE_lead_diff = SWE_lead_diff * normal_weight2) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -1069,16 +1070,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                 arrange(Date) %>%
                                 mutate(lead_num = row_number()) %>%
                                 ungroup() %>%
-                                mutate(lag_day_adjusted = (x- lag_period)) %>%
-                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff)) %>%
-                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff )) %>%
-                                mutate(normal_weight = (normal_weight - 0)/(weight_max-0)) %>%
-                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow)) %>%
-                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period*a_coeff_snow )) %>%
-                                mutate(normal_weight2 = (normal_weight2 - 0)/(weight_max2-0)) %>%
-                                mutate(total_precip = total_precip*normal_weight) %>%
-                                mutate(mean_temp = mean_temp*normal_weight2) %>%
-                                mutate(SWE_lead_diff = SWE_lead_diff*normal_weight2) %>%
+                                mutate(lag_day_adjusted = (x - lag_period)) %>%
+                                mutate(weight_max = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff)) %>%
+                                mutate(normal_weight = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff )) %>%
+                                mutate(normal_weight = (normal_weight - 0) / (weight_max - 0)) %>%
+                                mutate(weight_max2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow)) %>%
+                                mutate(normal_weight2 = dnorm(lag_day_adjusted, mean = lag_day_adjusted, sd = lag_period * a_coeff_snow )) %>%
+                                mutate(normal_weight2 = (normal_weight2 - 0) / (weight_max2 - 0)) %>%
+                                mutate(total_precip = total_precip * normal_weight) %>%
+                                mutate(mean_temp = mean_temp * normal_weight2) %>%
+                                mutate(SWE_lead_diff = SWE_lead_diff * normal_weight2) %>%
                                 filter(Date >= last_date & Date <= Prediction_date) %>%
                                 group_by(sim_num, Well) %>%
                                 summarise(precip_lead = mean(total_precip, na.rm = TRUE),
@@ -1106,18 +1107,18 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             dplyr::select(Date, Well,groundwater,groundwater_diff, precipitation_lag, mean_temp_lag,
                                           max_groundwater, min_groundwater, max_groundwater_diff, min_groundwater_diff,
                                           min_mean_temp_lead, max_mean_temp_lead, max_precip_lead, min_precip_lead,
-                                          SWE,SWE_lag_diff,max_SWE_lead_diff,min_SWE_lead_diff) %>%
+                                          SWE, SWE_lag_diff, max_SWE_lead_diff, min_SWE_lead_diff) %>%
                             mutate(joiner = 1) %>%
                             mutate(Date_predicted = Date+x) %>%
                             full_join(temp_forcast4) %>%
-                            mutate(SWE_lead_diff = ifelse(SWE_lead_diff < 0,ifelse(SWE_lead_diff <= -SWE, -SWE, SWE_lead_diff),SWE_lead_diff)) %>%
-                            mutate(precip_lead = (precip_lead - min_precip_lead)/(max_precip_lead-min_precip_lead),
-                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead)/(max_mean_temp_lead-min_mean_temp_lead),
-                                   SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff)/(max_SWE_lead_diff-min_SWE_lead_diff)
+                            mutate(SWE_lead_diff = ifelse(SWE_lead_diff < 0,ifelse(SWE_lead_diff <= -SWE, -SWE, SWE_lead_diff), SWE_lead_diff)) %>%
+                            mutate(precip_lead = (precip_lead - min_precip_lead) / (max_precip_lead - min_precip_lead),
+                                   mean_temp_lead = (mean_temp_lead - min_mean_temp_lead) / (max_mean_temp_lead - min_mean_temp_lead),
+                                   SWE_lead_diff = (SWE_lead_diff - min_SWE_lead_diff) / (max_SWE_lead_diff - min_SWE_lead_diff)
                             )
 
                           temp2_test <- temp2 %>%
-                            filter(days_in_year ==last_date_days_in_year )
+                            filter(days_in_year == last_date_days_in_year )
 
 
 
@@ -1136,8 +1137,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                               ANN), key = "Model", value = predicted_value)
 
                           temp2_pred <- temp2_pred %>%
-                            mutate(predicted_value = predicted_value*(max_groundwater_diff - min_groundwater_diff) + min_groundwater_diff,
-                                   groundwater = groundwater*(max_groundwater - min_groundwater) + min_groundwater) %>%
+                            mutate(predicted_value = predicted_value * (max_groundwater_diff - min_groundwater_diff) + min_groundwater_diff,
+                                   groundwater = groundwater * (max_groundwater - min_groundwater) + min_groundwater) %>%
                             mutate(predicted_value = groundwater + predicted_value) %>%
                             mutate(lag_day = x)
 
@@ -1265,7 +1266,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                          ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp,ensemble_forecast_data_z)
+                          ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp, ensemble_forecast_data_z)
                         }
 
 
@@ -1326,17 +1327,17 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                         dummy_data2 <- data.frame(
-                          peak_recharge = as.Date(c(Sys.Date()+14 - recharge_lag , Sys.Date()+30 - recharge_lag, Sys.Date()+60 - recharge_lag, Sys.Date()+90 - recharge_lag)),
+                          peak_recharge = as.Date(c(Sys.Date() + 14 - recharge_lag , Sys.Date() + 30 - recharge_lag, Sys.Date() + 60 - recharge_lag, Sys.Date() + 90 - recharge_lag)),
                           prediction_period = c("14 Days", "30 Days", "60 Days", "90 Days"),
-                          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+30 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+60 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+90 - recharge_lag -recharge_lag)),
-                          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+30 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+60 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+90 - recharge_lag +recharge_lag)),
-                          variable = c("Precip (30 day)","Precip (30 day)","Precip (30 day)","Precip (30 day)"),
+                          lower_range = as.Date(c(Sys.Date() + 14 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 30 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 60 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 90 - recharge_lag - recharge_lag)),
+                          upper_range = as.Date(c(Sys.Date() + 14 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 30 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 60 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 90 - recharge_lag + recharge_lag)),
+                          variable = c("Precip (30 day)", "Precip (30 day)", "Precip (30 day)", "Precip (30 day)"),
                           location = c(0.8, 0.87, 0.95, 1.03))
 
 
@@ -1361,13 +1362,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                         temp_graph2 <- ggplot() +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
                           scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
                           scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
                           gglayers +
@@ -1377,22 +1378,22 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           { if ("deterministic" %in% rfc_forecast_include) geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) } +
                           # geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) +
                           geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 0.8) +
-                          scale_colour_manual(name = "", values = c("black","red","orange")) +
+                          scale_colour_manual(name = "", values = c("black", "red", "orange")) +
                           geom_segment(data = dummy_data2,
                                        aes(x = lower_range,
                                            xend = upper_range,
-                                           y = Range*location,
-                                           yend = Range*location),
+                                           y = Range * location,
+                                           yend = Range * location),
                                        size = 1, alpha = 0.5,
                                        color = "darkblue")+
                           geom_point(data = dummy_data2,
                                      aes(x = peak_recharge,
-                                         y = Range*location),
+                                         y = Range * location),
                                      shape = 21, size = 1, alpha = 0.5, fill = "darkblue") +
 
                           geom_text(data = dummy_data2,
                                     aes(x = lower_range,
-                                        y = Range*location,
+                                        y = Range * location,
                                         label = prediction_period),
                                     color = "darkblue",
                                     size = 2,
@@ -1464,12 +1465,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                          ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp,ensemble_forecast_data_z)
+                          ensemble_forecast_data_y_temp <- rbind(ensemble_forecast_data_y_temp, ensemble_forecast_data_z)
                         }
 
 
                         ensemble_forecast_data_y_temp <- ensemble_forecast_data_y_temp %>%
-                          filter(Date >=deterministic_forecast_data_temp_max )
+                          filter(Date >= deterministic_forecast_data_temp_max )
 
 
 
@@ -1531,18 +1532,18 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                         dummy_data2 <- data.frame(
-                          peak_recharge = as.Date(c(Sys.Date()+14 - recharge_lag , Sys.Date()+30 - recharge_lag, Sys.Date()+60 - recharge_lag, Sys.Date()+90 - recharge_lag)),
+                          peak_recharge = as.Date(c(Sys.Date() + 14 - recharge_lag , Sys.Date() + 30 - recharge_lag, Sys.Date() + 60 - recharge_lag, Sys.Date() + 90 - recharge_lag)),
                           prediction_period = c("14 Days", "30 Days", "60 Days", "90 Days"),
-                          lower_range = as.Date(c(Sys.Date()+14 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+30 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+60 - recharge_lag -recharge_lag,
-                                                  Sys.Date()+90 - recharge_lag -recharge_lag)),
-                          upper_range = as.Date(c(Sys.Date()+14 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+30 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+60 - recharge_lag +recharge_lag,
-                                                  Sys.Date()+90 - recharge_lag +recharge_lag)),
-                          variable = c("Precip (30 day)","Precip (30 day)","Precip (30 day)","Precip (30 day)"),
-                          location = c(0.8,0.87,0.95,1.03))
+                          lower_range = as.Date(c(Sys.Date() + 14 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 30 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 60 - recharge_lag - recharge_lag,
+                                                  Sys.Date() + 90 - recharge_lag - recharge_lag)),
+                          upper_range = as.Date(c(Sys.Date() + 14 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 30 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 60 - recharge_lag + recharge_lag,
+                                                  Sys.Date() + 90 - recharge_lag + recharge_lag)),
+                          variable = c("Precip (30 day)", "Precip (30 day)", "Precip (30 day)", "Precip (30 day)"),
+                          location = c(0.8, 0.87, 0.95, 1.03))
 
 
                         Precip_historical <- temp_historical_conditions_stats_plot %>%
@@ -1572,13 +1573,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         #ensemble_forecast_data_y_temp
 
                         temp_graph2 <- ggplot() +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
-                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5,  aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_5th, ymin = predicted_value_min, fill = "1 Min - Q5"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_10th, ymin = predicted_value_5th, fill = "2 Q5 - Q10"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_25th, ymin = predicted_value_10th, fill = "3 Q10 - Q25"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_75th, ymin = predicted_value_25th, fill = "4 Q25 - Q75"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_90th, ymin = predicted_value_75th, fill = "5 Q75 - Q90"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_95th, ymin = predicted_value_90th, fill = "6 Q90 - Q95"), size = 1) +
+                          geom_ribbon(data = temp_historical_conditions_stats_plot, alpha = 0.5, aes(x = Date, ymax = predicted_value_max, ymin = predicted_value_95th, fill = "7 Q95 - Max"), size = 1) +
                           scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
                           scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
                           gglayers +
@@ -1588,22 +1589,22 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           { if ("deterministic" %in% rfc_forecast_include) geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) } +
                           # geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "2"), linetype = 1, linewidth = 0.8) +
                           geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "3", group = en_sim), linetype = 1, linewidth = 0.8) +
-                          scale_colour_manual(name = "", values = c("black","red","orange")) +
+                          scale_colour_manual(name = "", values = c("black", "red", "orange")) +
                           geom_segment(data = dummy_data2,
                                        aes(x = lower_range,
                                            xend = upper_range,
-                                           y = Range*location,
-                                           yend = Range*location),
+                                           y = Range * location,
+                                           yend = Range * location),
                                        size = 1, alpha = 0.5,
                                        color = "darkblue")+
                           geom_point(data = dummy_data2,
                                      aes(x = peak_recharge,
-                                         y = Range*location),
+                                         y = Range * location),
                                      shape = 21, size = 1, alpha = 0.5, fill = "darkblue") +
 
                           geom_text(data = dummy_data2,
                                     aes(x = lower_range,
-                                        y = Range*location,
+                                        y = Range * location,
                                         label = prediction_period),
                                     color = "darkblue",
                                     size = 2,
@@ -1748,17 +1749,17 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           geom_segment(data = dummy_data2,
                                        aes(x = lower_range,
                                            xend = upper_range,
-                                           y = Range*location,
-                                           yend = Range*location, color = "Peak Recharge Period"),
+                                           y = Range * location,
+                                           yend = Range * location, color = "Peak Recharge Period"),
                                        size = 1, alpha = 0.5)+
                           geom_point(data = dummy_data2,
                                      aes(x = peak_recharge,
-                                         y = Range*location, color = "Peak Recharge Period"),
+                                         y = Range * location, color = "Peak Recharge Period"),
                                      size = 1, alpha = 0.5 ) +
 
                           geom_text(data = dummy_data2,
                                     aes(x = lower_range,
-                                        y = Range*location,
+                                        y = Range * location,
                                         label = prediction_period, color = "Peak Recharge Period"),
                                     size = 2,
                                     vjust = 0.25,
@@ -1938,7 +1939,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       calculate_likelihood <- function(data, condition) {
                         data %>%
                           mutate(count = 1) %>%
-                          group_by(Well,Date_predicted, lag_day ,Model) %>%
+                          group_by(Well, Date_predicted, lag_day ,Model) %>%
                           mutate(total = sum(count)) %>%
                           summarise(count = sum(if_else({{condition}}, count, 0)), total = mean(total)) %>%
                           ungroup() %>%
@@ -1981,7 +1982,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       Probabilities_combined_lag_day <- Probabilities_combined %>%
                         arrange(Date_predicted) %>%
                         mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
-                        mutate(lag_day = paste0(lag_day," days")) %>%
+                        mutate(lag_day = paste0(lag_day, " days")) %>%
                         dplyr::select(category, table_name, lag_day) %>%
                         mutate(category = "") %>%
                         distinct(category, table_name, lag_day) %>%
@@ -2072,7 +2073,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       #                            fig.lab.size = 9)
 
 
-                      box_plot_explanation <- paste0(data_location,"Boxplot_Explanation.png")
+                      box_plot_explanation <- paste0(data_location, "Boxplot_Explanation.png")
                       box_plot_explanation <- image_read(box_plot_explanation)
 
                       box_plot_explanation <- rasterGrob(box_plot_explanation, interpolate = TRUE)
@@ -2141,15 +2142,15 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       #Annotate the final figure
                       final_figure <- ggpubr::annotate_figure(temp_figure,
                                                               top = ggpubr::text_grob(" "),
-                                                              fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"),
+                                                              fig.lab = paste0(y, " - ", location, ", ", recharge_type, " (Prediction Date: ", last_date, ")"),
                                                               fig.lab.pos = "top.left"
                       )
 
                       #Save the final figure
 
-                      ggsave(final_figure, filename = paste0(output_path,"/","Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 13.5, units = "in")
+                      ggsave(final_figure, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 13.5, units = "in")
                       ggsave(final_figure, filename = paste0("output/", y, ".jpeg"), height = 8, width = 13.5, units = "in")
-                      #  ggsave(final_figure, filename = paste0(figure_location,"Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 11.5, units = "in")
+                      #  ggsave(final_figure, filename = paste0(figure_location, "Well_", y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
 
 
                       #simplistic image
@@ -2194,22 +2195,23 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       #Annotate the final figure
                       final_figure_simple <- ggpubr::annotate_figure(temp_figure_simple,
                                                                      top = ggpubr::text_grob(" "),
-                                                                     fig.lab = paste0(y," - ",location,", ",recharge_type," (Prediction Date: ", last_date, ")"),
+                                                                     fig.lab = paste0(y, " - ", location, ", ", recharge_type, " (Prediction Date: ", last_date, ")"),
                                                                      fig.lab.pos = "top.left"
                       )
 
                       #Save the final figure
 
-                      ggsave(final_figure_simple, filename = paste0(output_path,"/","Well_",y,"_Model_Predictions_simple_", plot_type,".jpeg"), height = 6, width = 10.1, units = "in")
-                      #  ggsave(final_figure, filename = paste0(figure_location,"Well_",y,"_Model_Predictions_", plot_type,".jpeg"), height = 8, width = 11.5, units = "in")
+                      ggsave(final_figure_simple, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_simple_", plot_type, ".jpeg"), height = 6, width = 10.1, units = "in")
+                      #  ggsave(final_figure, filename = paste0(figure_location, "Well_",y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
 
 
 
 
                       Probabilities_combined_output <- Probabilities_combined %>%
+                        mutate(Forecast_Date = Sys.Date()) %>%
                         mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
                         mutate(conditions = category) %>%
-                        dplyr::select(Well, Date_predicted, lag_day, Model,likelihood,conditions)
+                        dplyr::select(Well, Forecast_Date, Date_predicted, lag_day, Model, likelihood, conditions)
                       Probabilities_combined_output
 
                       Waterlevel_adjustments
@@ -2235,17 +2237,18 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         ) %>%
                         mutate(missing_data = ifelse(is.na(groundwater), "Missing", NA))
 
-                      Probabilities_combined_output<- full_join(Probabilities_combined_output, Time_series_data_2_plot)
+                      Probabilities_combined_output <- full_join(Probabilities_combined_output, Time_series_data_2_plot)
 
                     } else {
 
                       Probabilities_combined_output <- data.frame(Well = y,
+                                                                  Forecast_Date = Sys.Date(),
                                                                   Date_predicted = NA,
                                                                   lag_day = NA,
                                                                   Model = "ANN",
                                                                   likelihood = NA,
-                                                                  conditions = NA,
-                                                                  Date = Sys.Date(),
+                                                                  conditions = "No forecast available (no recent data)",
+                                                                  Date = last_measurements_well,
                                                                   groundwater = NA,
                                                                   predicted_value_mean = NA,
                                                                   predicted_value_min = NA,

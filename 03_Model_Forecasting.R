@@ -105,13 +105,17 @@ combined <- bind_rows(
   lapply(list_of_results, function(forecast_file){
     read_csv(file = forecast_file) %>%
       mutate(Date_predicted = as.Date(Date_predicted))
-  })) %>%
-  filter(!is.na(lag_day))
+  }))# %>%
+  # filter(!is.na(lag_day))
 
 data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS online
   left_join(pgown_well_info_all)
 
 write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
+
+# data_out_simple <- data_out %>%
+#   select(Well, )
+
 write.csv(data_out, paste0("output/predictive_forecast_results.csv"), row.names = FALSE)
 
 
