@@ -112,11 +112,28 @@ data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS o
   left_join(pgown_well_info_all)
 
 write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
-
-# data_out_simple <- data_out %>%
-#   select(Well, )
-
 write.csv(data_out, paste0("output/predictive_forecast_results.csv"), row.names = FALSE)
+
+data_out_simple <- data_out %>%
+  select(Well, Location, Region, Latitude = latitude, Longitude = longitude,
+         Aquifer_ID = aquifer_id, Aquifer_Subtype = subtype_sym,
+         Model, Forecast_Date, Latest_Date = Date, Predicted_Date = Date_predicted,
+         Forecast_Days = lag_day, Conditions = conditions, Likelihood = likelihood,
+         Forecast_Performance = performance, Snow_Influenced = Snow_influenced,
+         Predicted_Min = predicted_value_min, Predicted_10th = predicted_value_10th,
+         Predicted_25th = predicted_value_25th,
+         Predicted_Mean = predicted_value_mean, Predicted_Median = predicted_value_50th,
+         Predicted_75th = predicted_value_75th, Predicted_90th = predicted_value_90th,
+         Predicted_Max = predicted_value_max
+  ) %>%
+  mutate(Hydrograph_URL = "",
+         Realtime_URL = "",
+         Aquifer_URL = "",
+         Well_URL = "",
+         Issued_At = format(Sys.time(), "%Y-%m-%d %H:%M"))
+
+write.csv(data_out_simple, paste0(output_path, "/RFC_GW_Forecast.csv"), row.names = FALSE)
+write.csv(data_out_simple, paste0("output/RFC_GW_Forecast.csv"), row.names = FALSE)
 
 
 
