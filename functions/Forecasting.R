@@ -101,7 +101,6 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       temp <- Time_series_data %>%
                         filter(Well == y)
 
-
                       temp_WL_states_temp <- temp_WL_states %>%
                         filter(Well == y)
 
@@ -2028,9 +2027,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       latest_value_table <- tibble(latest = c("Latest",
                                                               temp_WL_states_latest$Date,
-                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Above Normal", "100", ""),
-                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Normal", "100", ""),
-                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Below Normal", "100", "")))
+                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Above Normal", ">99", ""),
+                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Normal", ">99", ""),
+                                                              ifelse(temp_WL_states_latest$Latest_Percentile == "Below Normal", ">99", "")))
 
 
                       Probabilities_combined2 <- rbind(Probabilities_combined_lag_day,
@@ -2210,6 +2209,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       # Markdown Report
 
+                      if (generate_well_pdf) {
+
+
+                      }
 
 
                       # Summarize data for output
@@ -2219,7 +2222,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         mutate(Forecast_Date = Sys.Date()) %>%
                         # mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
                         mutate(conditions = category) %>%
-                        dplyr::select(Well, Forecast_Date, Date_predicted, lag_day, Model, likelihood, conditions)
+                        mutate(Latest_Conditions = temp_WL_states_latest$Latest_Percentile) %>%
+                        dplyr::select(Well, Forecast_Date, Date_predicted, lag_day, Model, likelihood, conditions, Latest_Conditions)
                       Probabilities_combined_output
 
                       Waterlevel_adjustments
@@ -2257,6 +2261,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                                                   likelihood = NA,
                                                                   conditions = "No forecast available (no recent data)",
                                                                   Date = last_measurements_well,
+                                                                  Latest_Conditions = NA,
                                                                   groundwater = NA,
                                                                   predicted_value_mean = NA,
                                                                   predicted_value_min = NA,
