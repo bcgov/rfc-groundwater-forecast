@@ -4,7 +4,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                            rfc_forecast_include,
                            ensemble_forecast_data,
                            deterministic_forecast_data, Missing_date_window,
-                           rfc_forecast_date_window ) {
+                           rfc_forecast_date_window,
+                           generate_well_pdf) {
 
 
   # Creates historical groundwater levels for figures
@@ -1960,15 +1961,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                       # Calculate ensemble likelihoods
-
-
-
                       Probabilities_combined <- Probabilities_combined %>%
-                        mutate(likelihood = likelihood*100)
+                        mutate(likelihood = likelihood * 100)
 
-
-                      Probabilities_combined <- Probabilities_combined %>%
-                        mutate(likelihood = pmin(round(likelihood / 5) * 5, 95))
+                      # JG removed rounding from data
+                      # Probabilities_combined <- Probabilities_combined %>%
+                      #   mutate(likelihood = pmin(round(likelihood / 5) * 5, 95))
                       Probabilities_combined <- Probabilities_combined %>%
                         filter(Model == "ANN")
 
@@ -1976,7 +1974,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         arrange(Date_predicted) %>%
                         mutate(table_name = paste0(Date_predicted, " (", lag_day, " days; ", Model, ")")) %>%
                         dplyr::select(category, table_name, likelihood) %>%
-                        mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
+                        mutate(likelihood = case_when(likelihood < 10 ~ "<10",
+                                                      likelihood > 90 ~ ">90",
+                                                      TRUE ~ as.character(round(likelihood, 0)))) %>%
+                        # mutate(likelihood = ifelse(likelihood > 90, ">90", round(likelihood, 0))) %>%
                         spread(table_name, likelihood)
 
                       Probabilities_combined_lag_day <- Probabilities_combined %>%
@@ -2207,9 +2208,16 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
+                      # Markdown Report
+
+
+
+                      # Summarize data for output
+
+
                       Probabilities_combined_output <- Probabilities_combined %>%
                         mutate(Forecast_Date = Sys.Date()) %>%
-                        mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
+                        # mutate(likelihood = ifelse(likelihood < 5, "<5", round(likelihood, 0))) %>%
                         mutate(conditions = category) %>%
                         dplyr::select(Well, Forecast_Date, Date_predicted, lag_day, Model, likelihood, conditions)
                       Probabilities_combined_output
