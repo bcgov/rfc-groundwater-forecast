@@ -52,7 +52,11 @@ pkgs <- c('tidyverse',
           "cowplot",
           "magick",
           "grid",
-          "xgboost")
+          "xgboost",
+          #add ons
+          'gt',
+          'leaflet',
+          'htmlwidgets')
 
 #Queries and installs missing packages
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
@@ -123,9 +127,14 @@ rfc_forecast_date_window <- 3
 rfc_forecast_include <- c("deterministic")
 # rfc_forecast_include <- NA
 
+generate_well_pdf <- FALSE
+
 # OPTIONS ----------------------------------------------------------------
 
-options(digits = 3, scipen = 5, warn = 0, timeout = 1200)
+options(digits = 3,
+        scipen = 5,
+        warn = 0,
+        timeout = 1200)
 
 Sys.setenv(TZ = "America/Vancouver")
 

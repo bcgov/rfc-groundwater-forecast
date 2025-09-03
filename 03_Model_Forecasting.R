@@ -85,7 +85,8 @@ for (i in Regional_group_list) {
                                            model_path, data_location, pgown_well_info,
                                            rfc_forecast_include,
                                            ensemble_forecast_data, deterministic_forecast_data,
-                                           Missing_date_window, rfc_forecast_date_window)
+                                           Missing_date_window, rfc_forecast_date_window,
+                                           generate_well_pdf)
 
 
   # Save the csv output
@@ -95,6 +96,8 @@ for (i in Regional_group_list) {
 }
 
 
+
+#### MAKE THIS INTO ANOTHER SCRIPT AND LINK TO THIS AT THE END
 # Merge forecast files into one file
 
 list_of_results <- list.files(path = output_path,
@@ -114,27 +117,39 @@ data_out <- combined %>%  # format and add some links ready for mapping/ArcGIS o
 write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row.names = FALSE)
 write.csv(data_out, paste0("output/predictive_forecast_results.csv"), row.names = FALSE)
 
-data_out_simple <- data_out %>%
+
+# Create table for csv output for ArcGIS online and leaflet mapping
+
+# Get well tag information
+wells_sf <- bcdata::bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
+  dplyr::filter(!is.na(.data$OBSERVATION_WELL_NUMBER)) %>%
+  dplyr::collect() %>%
+  dplyr::select(Well = OBSERVATION_WELL_NUMBER,
+                Well_Tag_number = WELL_TAG_NUMBER) %>%
+  dplyr::mutate(Well = paste0("OW", Well))
+
+# merge and format data for output
+data_table_out <- data_out %>%
+  left_join(wells_sf, by = join_by(Well)) %>%
   select(Well, Location, Region, Latitude = latitude, Longitude = longitude,
          Aquifer_ID = aquifer_id, Aquifer_Subtype = subtype_sym,
-         Model, Forecast_Date, Latest_Date = Date, Predicted_Date = Date_predicted,
+         Forecast_Date, Latest_Date = Date, Predicted_Date = Date_predicted,
          Forecast_Days = lag_day, Conditions = conditions, Likelihood = likelihood,
          Forecast_Performance = performance, Snow_Influenced = Snow_influenced,
          Predicted_Min = predicted_value_min, Predicted_10th = predicted_value_10th,
          Predicted_25th = predicted_value_25th,
          Predicted_Mean = predicted_value_mean, Predicted_Median = predicted_value_50th,
          Predicted_75th = predicted_value_75th, Predicted_90th = predicted_value_90th,
-         Predicted_Max = predicted_value_max
-  ) %>%
-  mutate(Hydrograph_URL = "",
-         Realtime_URL = "",
-         Aquifer_URL = "",
-         Well_URL = "",
-         Issued_At = format(Sys.time(), "%Y-%m-%d %H:%M"))
+         Predicted_Max = predicted_value_max,
+         Well_Tag_number) %>%
+  mutate(Hydrograph_URL = paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/gw_forecasting/outputs/Well_",Well,"_Model_Predictions.pdf"),
+         Realtime_URL = paste0("https://bcmoe-prod.aquaticinformatics.net/Data/Location/Summary/Location/",Well,"/Interval/Latest"),
+         Aquifer_URL = ifelse(is.na(Aquifer_ID), "", paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/", Aquifer_ID)),
+         Well_URL = ifelse(is.na(Well_Tag_number), "", paste0("https://apps.nrs.gov.bc.ca/gwells/well/", Well_Tag_number)),
+         Issued_At = format(Sys.time(), "%Y-%m-%d %H:%M")) %>%
+  select(-Well_Tag_number)
 
-write.csv(data_out_simple, paste0(output_path, "/RFC_GW_Forecast.csv"), row.names = FALSE)
-write.csv(data_out_simple, paste0("output/RFC_GW_Forecast.csv"), row.names = FALSE)
-
-
-
-
+# Save outputs
+write.csv(data_table_out, paste0(output_path, "/RFC_GW_Forecast.csv"), row.names = FALSE)
+write.csv(data_table_out, paste0("output/RFC_GW_Forecast.csv"), row.names = FALSE)
+#### MAYBE MAKE THE OUTPUT THE LIKELYHOOD OF NORMAL/BELOW/ABOVE IN ONE ROW RATHER THAN ALL SEPERATE
