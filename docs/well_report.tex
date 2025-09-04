@@ -1,0 +1,55 @@
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{eso-pic}
+\usepackage{booktabs}    % for \toprule, \midrule, etc.
+\usepackage{array}       % for column formatting
+\usepackage[table]{xcolor}  % for \cellcolor
+\usepackage{multirow}    % for row merging
+\usepackage{colortbl}    % for color in tables (optional
+\usepackage{caption}    % for color in tables (optional
+\usepackage{longtable}    % for color in tables (optional
+\usepackage{anyfontsize}    % for color in tables (optional
+\usepackage{wrapfig}
+
+% \usepackage{fontspec}  % Allows font customization with xelatex
+% \setmainfont{Arial}    % Set the main document font to Arial
+
+% \usepackage{fontspec}
+% \setmainfont{Liberation Sans}
+
+\usepackage{fontspec}
+\setmainfont{BCSans-Regular.otf}[
+  Path = ./fonts/,
+  BoldFont = BCSans-Bold.otf,
+  ItalicFont = BCSans-Italic.otf,
+  BoldItalicFont = BCSans-BoldItalic.otf
+]
+
+
+% Set page margins smaller so the header stands out more
+\geometry{top=1in, bottom=0.5in, left=0.5in, right=0.5in}
+
+\definecolor{myblue}{RGB}{35, 64, 117}
+\definecolor{myyellow}{RGB}{227, 168, 43}
+
+% Add banner at the top of every page
+\AddToShipoutPictureBG*{%
+  \begin{tikzpicture}[remember picture,overlay]
+  % Blue banner
+  \fill[myblue] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+
+  % Yellow line
+  \fill[myyellow] ([yshift=-1.5cm]current page.north west) rectangle ([yshift=-1.6cm]current page.north east);
+
+  % Logo (top left)
+  \node[anchor=north west, xshift=20cm, yshift=-0.15cm] at (current page.north west) {\includegraphics[height=1cm]{./BCID_V_RGB_rev.png}};
+
+  % Text in banner (centered)
+    \node[anchor=north, text=white, font=\bfseries\Large] at ([yshift=-0.2cm, xshift=-6.5cm]current page.north) {Groundwater Level Forecast};
+    \node[anchor=north, text=white, font=\itshape\small] at ([yshift=-0.9cm, xshift=-3.8cm]current page.north) {Forecasts range of possible near-term groundwater levels relative to historical conditions};
+  \end{tikzpicture}
+}
+
+\pagestyle{empty}  % removes page numbers

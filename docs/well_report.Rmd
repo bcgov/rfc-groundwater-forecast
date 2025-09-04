@@ -1,0 +1,77 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: well_report.tex
+    latex_engine: xelatex
+    pandoc_args: ["--variable=geometry:paperwidth=8.5in,paperheight=9in,margin=0.25in"]
+params:
+  well_id: NULL
+  well_location: NULL
+  well_tag_number: NULL
+  aquifer_num: NULL
+  aquifer_type: NULL
+  model_type: NULL
+  table: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(gt)
+```
+
+\vspace*{-1.5cm}
+
+\begin{center}
+{\large \textbf{Observation Well `r paste0(params$well_id, " - ", gsub("&", "\\\\&", params$well_location))`}}
+\vspace{-1.2em}
+\end{center}
+
+\begin{center}
+\textbf{`r params$aquifer_type` Aquifer | `r params$model_type` | Forecast Issued: `r Sys.Date()`}
+\vspace{-1.5em}
+\end{center}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=8in]{Well_`r params$well_id`_plot.pdf}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\end{minipage}
+\end{center}
+
+\begin{center}
+{\large \textbf{`r paste0(params$well_id)` - Likelihood (\%) of Groundwater Level Conditions}}
+\vspace{-1.5em}
+\end{center}
+
+```{r table}
+params$table %>% 
+  tab_options(latex.use_longtable=TRUE,
+              table.font.size = px(12))
+```
+
+\begin{wrapfigure}{r}{0.4\textwidth}
+  \centering
+  \vspace{-10pt}
+  \vspace{-10pt}
+\end{wrapfigure}
+
+**Description/Explanation**: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc convallis enim non dolor sagittis efficitur. Quisque a quam eros. Suspendisse interdum arcu finibus, ullamcorper risus a, laoreet lacus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec orci tristique, tincidunt nisl semper, scelerisque mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris ornare urna eu cursus pulvinar. Morbi viverra eros tincidunt, rhoncus nisi nec, tincidunt libero. Maecenas at est et ipsum ultrices hendrerit. Aenean quis ullamcorper lorem. 
+
+**Disclaimer**: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+
+\begin{center}
+Model Information: \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Detailed explanation of chart}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Technical reference for model}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Forecast Map}}\\
+
+Well Information: \textcolor{blue}{\href{`r paste0("https://aqrt.nrs.gov.bc.ca/Data/Location/Summary/Location/",params$well_id,"/Interval/Latest")`}{Real-time Data}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/well/", params$well_tag_number)`}{Well Summary}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/",params$aquifer_num)`}{Aquifer Summary}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network}{PGOWN}}
+
+
+Issued by \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{BC River Forecast Centre}} | Updated: `r format(Sys.time(), "%Y-%m-%d %H:%M")`
+
+\end{center}
+
