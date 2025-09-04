@@ -22,7 +22,20 @@
 # loads common libraries, sets default switches, colours, ggplot formatting
 #
 # ==============================================================================
-#
+
+# Test if running on Github Actions
+is_github_actions <- Sys.getenv("GITHUB_ACTIONS") == "true"
+
+# Set library path for cache
+if (is_github_actions) {
+  message("Running inside GitHub Actions")
+  Sys.setenv(R_LIBS_USER = "~/.local/share/R/library")
+  dir.create(Sys.getenv("R_LIBS_USER"), recursive = TRUE, showWarnings = FALSE)
+  .libPaths(Sys.getenv("R_LIBS_USER"))
+} else {
+  message("Running locally")
+}
+
 
 ## LOAD CRAN PACKAGES --------------------------------------------------
 pkgs <- c('tidyverse',
@@ -96,14 +109,12 @@ dir.create(model_path, showWarnings = FALSE)
 
 
 # Fill in well information based on location
-
 pgown_well_info_all <- read_csv(paste0(user_input_location, "Forecasting_Model_Data.csv")) %>%
   filter(!is.na(Climate_station_Id) & !is.na(Lag_time)) %>%
   mutate(Climate_Infilled_id = ifelse(is.na(Climate_Infilled_id), 0, Climate_Infilled_id),
          Climate_secondary_Infilled = ifelse(is.na(Climate_secondary_Infilled), 0, Climate_secondary_Infilled),
          Climate_tertiary_Infilled = ifelse(is.na(Climate_tertiary_Infilled), 0, Climate_tertiary_Infilled),
          Climate_quaternary_Infilled = ifelse(is.na(Climate_quaternary_Infilled), 0, Climate_quaternary_Infilled))
-
 
 Regional_group_list <- pgown_well_info_all %>%
   dplyr::select(Regional_group) %>%
@@ -117,7 +128,7 @@ Regional_group_list <- as.list(Regional_group_list)
 forecast_days <- c(14, 30, 60, 90)
 
 # Number of cores (for parallel computing)
-num_cores <- 4
+num_cores <- ifelse(is_github_actions, 2, 4)
 
 Missing_date_window <- 3
 

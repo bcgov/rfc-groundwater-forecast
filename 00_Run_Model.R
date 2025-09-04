@@ -25,6 +25,9 @@
 #
 
 
+# Run config setup
+source("01_ConfigInputs.R")
+
 # Run the model
 source("03_Model_Forecasting.R")
 
