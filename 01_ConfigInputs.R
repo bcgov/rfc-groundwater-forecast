@@ -38,7 +38,18 @@ if (is_github_actions) {
 
 
 ## LOAD CRAN PACKAGES --------------------------------------------------
-pkgs <- c('tidyverse',
+pkgs <- c('dplyr',
+          'ggplot2',
+          'tidyr',
+          'lubridate',
+          'readr',
+          'stringr',
+          'tibble',
+          'forcats',
+          'purrr',
+          'padr',
+          'zoo',
+          'ggplot2',
           'lubridate',
           'padr',
           'zoo',
