@@ -55,7 +55,8 @@ pkgs <- c('tidyverse',
           "xgboost",
           'gt',
           'leaflet',
-          'htmlwidgets')
+          'htmlwidgets',
+          'pak')
 
 #Queries and installs missing packages
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
