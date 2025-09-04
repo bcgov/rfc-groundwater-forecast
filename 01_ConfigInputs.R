@@ -53,7 +53,6 @@ pkgs <- c('tidyverse',
           "magick",
           "grid",
           "xgboost",
-          #add ons
           'gt',
           'leaflet',
           'htmlwidgets')
@@ -127,7 +126,7 @@ rfc_forecast_date_window <- 3
 rfc_forecast_include <- c("deterministic")
 # rfc_forecast_include <- NA
 
-generate_well_pdf <- FALSE
+generate_well_pdf <- TRUE
 
 # OPTIONS ----------------------------------------------------------------
 

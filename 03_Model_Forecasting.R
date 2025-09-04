@@ -88,7 +88,6 @@ for (i in Regional_group_list) {
                                            Missing_date_window, rfc_forecast_date_window,
                                            generate_well_pdf)
 
-
   # Save the csv output
   write_csv(Model_Forecasting_data, paste0(output_path, "/predictive_forecast_results_", i, ".csv"))
   # write_csv(Model_Forecasting_data, paste0("Output//predictive_forecast_results_", i, ".csv"))

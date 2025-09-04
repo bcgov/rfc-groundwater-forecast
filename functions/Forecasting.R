@@ -87,6 +87,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                     #y= "OW492"
                     #y= "OW002"
                     #y= "OW406"
+                    #y= "OW460"
                     #y= "OW275"
                     #y= "OW255"
                     # y = Well_list[1]
@@ -1695,10 +1696,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         scale_y_reverse()
 
                       temp_graph
+
                       # Create the second plot (temp_graph2) without the legend
-                      ggsave(temp_graph,
-                             filename = paste0(output_path, "/", "Well_", y, "_Model_Prediction_rawplot_", plot_type, ".jpeg"),
-                             height = 6.5, width = 11, units = "in")
+                      # JG remove for now
+                      # ggsave(temp_graph,
+                      #        filename = paste0(output_path, "/", "Well_", y, "_Model_Prediction_rawplot_", plot_type, ".jpeg"),
+                      #        height = 6.5, width = 11, units = "in")
 
 
 
@@ -1713,6 +1716,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       )
 
 
+                      # Legend for png
                       legend_plot <- cowplot::get_legend(
                         ggplot() +
                           geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - Min, fill = "0 - 10th percentile (Much Below Normal)"), size = 1) +
@@ -1774,22 +1778,58 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             legend.title = element_text(size = 9)  # Adjust the size as needed
                           )
                       )
+                      # plot(legend_plot)
 
-                      plot(legend_plot)
+                      # Legend components for pdf plot
+                      legend_plot_pdf_1 <- cowplot::get_legend(
+                        ggplot() +
+                          geom_line(data = temp, aes(x = Date, y = Waterlevel_adjustments_temp - groundwater, colour = "Groundwater Levels"), linewidth = 1) +
+                          geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "Ensemble Forecast", group = en_sim), linetype = 1, linewidth = 1) +
+                          scale_colour_manual(name = "Recent Observed Data",
+                                              values = c("Groundwater Levels" = "black")) +
+                          theme(
+                            legend.position = "right",
+                            legend.key.size = unit(0.5, "lines"),
+                            legend.box = "vertical",
+                            legend.title = element_text(size = 9)
+                          )
+                      )
+                      # plot(legend_plot_pdf_1)
 
-                      #
+                      legend_plot_pdf_2 <- cowplot::get_legend(
+                        ggplot() +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - Min, fill = "0 - 10th  (Much Below Normal)"), size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per25th, ymin = Waterlevel_adjustments_temp - per10th, fill = "10 - 25th  (Below Normal)"), size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per75th, ymin = Waterlevel_adjustments_temp - per25th, fill = "25 - 75th  (Normal)"), size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per90th, ymin = Waterlevel_adjustments_temp - per75th, fill = "75 - 90th  (Above Normal)"), size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - Max, ymin = Waterlevel_adjustments_temp - per90th, fill = "90 - 100th  (Much Above Normal)"), size = 1) +
+                          scale_fill_brewer(name = "Historic Percentiles", palette = "Spectral", direction = 1) +
+                          theme(
+                            legend.position = "right",
+                            legend.key.size = unit(0.5, "lines"),
+                            legend.box = "vertical",
+                            legend.title = element_text(size = 9)
+                          )
+                      )
+                      # plot(legend_plot_pdf_2)
 
-
-
-
-
-
-
-
-
-
-
-
+                      legend_plot_pdf_3 <- cowplot::get_legend(
+                        ggplot() +
+                          geom_crossbar(data = dummy_data,
+                                        aes(x = Date_predicted, y = fake_value, ymin = fake_value, ymax = fake_value, colour = performance),
+                                        alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                          geom_errorbar(data = dummy_data,
+                                        aes(x = Date_predicted, ymin = fake_value, ymax = fake_value, colour = performance),
+                                        alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                          scale_colour_manual(name = "Forecast Model Performance", values = performance_colors) +
+                          theme(
+                            legend.position = "right",
+                            legend.key.size = unit(0.5, "lines"),
+                            legend.box = "vertical",
+                            legend.title = element_text(size = 9)
+                          )
+                      )
+                      # plot(legend_plot_pdf_3)
 
 
 
@@ -2200,10 +2240,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       )
 
                       #Save the final figure
-
-                      ggsave(final_figure_simple, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_simple_", plot_type, ".jpeg"), height = 6, width = 10.1, units = "in")
+                      # JG remove for now
+                      # ggsave(final_figure_simple, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_simple_", plot_type, ".jpeg"), height = 6, width = 10.1, units = "in")
                       #  ggsave(final_figure, filename = paste0(figure_location, "Well_",y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
-
 
 
 
@@ -2211,8 +2250,189 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       if (generate_well_pdf) {
 
+                        recharge_type_2 <- ifelse(plot_type == "snow", "Snow", "Rain")
+
+                        # Make the gt table
+
+                        library(gt)
+
+                        prob_cats_orig <- c("1) Above Normal - above 75th percentile",
+                                            "2) Normal - 25th to 75th percentile",
+                                            "3) Below Normal - below 25th percentile")
+
+                        prob_cats <- c("Above Normal",
+                                       "Normal",
+                                       "Below Normal")
+
+                        latest_column <- latest_value_table[c(3:5),]
+
+                        table_for_gt <- Probabilities_combined %>%
+                          arrange(Date_predicted) %>%
+                          mutate(table_name = paste0(lag_day, "-days ", format(Date_predicted, "%b-%d"))) %>%
+                          dplyr::select(category, table_name, likelihood) %>%
+                          mutate(likelihood = case_when(likelihood < 10 ~ "<10",
+                                                        likelihood > 90 ~ ">90",
+                                                        TRUE ~ as.character(round(likelihood, 0)))) %>%
+                          spread(table_name, likelihood) %>%
+                          bind_cols(latest_column) %>%
+                          dplyr::select(category, latest, everything()) %>%
+                          mutate(category = case_when(category == prob_cats_orig[1] ~ prob_cats[1],
+                                                      category == prob_cats_orig[2] ~ prob_cats[2],
+                                                      category == prob_cats_orig[3] ~ prob_cats[3]),
+                                 Percentiles = case_when(category == prob_cats[1] ~ "Above 75th",
+                                                         category == prob_cats[2] ~ "25th to 75th",
+                                                         category == prob_cats[3] ~ "Below 25th")) %>%
+                          select("Groundwater Level Conditions" = category, "Percentile Range" = Percentiles, latest, everything())
+                        names(table_for_gt)[names(table_for_gt) == "latest"] <- paste0("Latest ", latest_value_table[2,])
+
+
+                        flag_tbl_above <- table_for_gt %>%
+                          dplyr::slice(1) %>% # only first row
+                          select(-(1:2)) %>%
+                          mutate(across(everything(), ~ {
+                            num <- suppressWarnings(as.numeric(gsub("[^0-9]", "", .x)))
+                            res <- .x == ">95" | num > 50
+                            tidyr::replace_na(res, FALSE)  # convert NA → FALSE
+                          }))
+
+                        flag_tbl_normal <- table_for_gt %>%
+                          dplyr::slice(2) %>% # only first row
+                          select(-(1:2)) %>%
+                          mutate(across(everything(), ~ {
+                            num <- suppressWarnings(as.numeric(gsub("[^0-9]", "", .x)))
+                            res <- .x == ">95" | num > 50
+                            tidyr::replace_na(res, FALSE)  # convert NA → FALSE
+                          }))
+
+                        flag_tbl_below <- table_for_gt %>%
+                          dplyr::slice(3) %>% # only first row
+                          select(-(1:2)) %>%
+                          mutate(across(everything(), ~ {
+                            num <- suppressWarnings(as.numeric(gsub("[^0-9]", "", .x)))
+                            res <- .x == ">95" | num > 50
+                            tidyr::replace_na(res, FALSE)  # convert NA → FALSE
+                          }))
+
+                        table_gt <- table_for_gt %>%
+                          gt() %>%
+                          tab_style(
+                            style = cell_fill(color = "lightblue"),
+                            locations = cells_body(
+                              rows = 1,
+                              columns = all_of(names(flag_tbl_above)[unlist(flag_tbl_above)])
+                            )
+                          ) %>%
+                          tab_style(
+                            style = cell_fill(color = "lightgreen"),
+                            locations = cells_body(
+                              rows = 2,
+                              columns = all_of(names(flag_tbl_normal)[unlist(flag_tbl_normal)])
+                            )
+                          ) %>%
+                          tab_style(
+                            style = cell_fill(color = "lightpink"),
+                            locations = cells_body(
+                              rows = 3,
+                              columns = all_of(names(flag_tbl_below)[unlist(flag_tbl_below)])
+                            )
+                          )  %>%
+                          cols_width(
+                            starts_with("Groundwater") ~ pct(20),
+                            starts_with("Percentile") ~ pct(17),
+                            everything() ~ pct(12)
+                          )  %>%
+                          cols_align(
+                            align = "center",
+                            columns = -(1:2)  # this means: all columns *except* the first
+                          )  %>%
+                          cols_align(
+                            align = "left",
+                            columns = 1:2  # or use tidyselect helpers like everything(), starts_with(), etc.
+                          )%>%
+                          tab_style(
+                            style = cell_text(weight = "bold"),
+                            locations = list(cells_column_labels(everything()))
+                          ) %>%
+                          tab_style(
+                            style = list(cell_fill(color = "gray96"),
+                                         cell_text(color = "black")),
+                            locations = cells_column_labels(everything())
+                          )  %>%
+                          tab_style(
+                            style = cell_fill(color = "gray96"),
+                            locations = cells_body(columns = 1:2)
+                          )
+
+
+                        # Make the pdf plot and merge in legends
+
+                        main_plot <- temp_graph
+
+                        legend_pdf <- plot_grid(plot_grid(legend_plot_pdf_1,
+                                                          legend_plot_pdf_2,
+                                                          legend_plot_pdf_3,
+                                                          ncol = 1, align = "v",
+                                                          rel_heights = c(0.1, 0.3, 0.3)),
+                                                ggdraw() +
+                                                  draw_image("docs/range_legend.png", x = -0.1, scale = 1),
+                                                ncol = 1, align = "v",
+                                                rel_heights = c(0.7, 0.3))
+
+                        plot_pdf <- plot_grid(plot_grid(main_plot, ncol = 1),
+                                              # spacer,
+                                              legend_pdf,
+                                              rel_widths = c(0.7,0.3),
+                                              nrow = 1)
+
+
+                        # Temporary directory for rendering
+                        tmp_dir <- file.path(tempdir(), paste0("tmp_", y))
+                        dir.create(tmp_dir, recursive = TRUE, showWarnings = FALSE)
+
+                        int_dir <- file.path(tempdir(), paste0("int_", y))
+                        dir.create(int_dir, recursive = TRUE, showWarnings = FALSE)
+
+                        temp_font_dir <- file.path(tmp_dir, "fonts")
+                        dir.create(temp_font_dir, recursive = TRUE, showWarnings = FALSE)
+
+                        # Copy files into temp dir
+                        rmd_copy <- file.copy("docs/well_report.Rmd", tmp_dir, overwrite = TRUE)
+                        tex_copy <- file.copy("docs/well_report.tex", tmp_dir, overwrite = TRUE)
+                        png_copy <- file.copy("docs/BCID_V_RGB_rev.png", tmp_dir, overwrite = TRUE)
+                        png2_copy <- file.copy("docs/range_legend.png", tmp_dir, overwrite = TRUE)
+                        fonts_copy <- file.copy(from = list.files("docs/fonts/", full.names = TRUE),
+                                                to = temp_font_dir, recursive = FALSE)
+
+                        # Save the plot to read back in.
+                        ggsave(
+                          filename = file.path(tmp_dir, paste0("Well_", y, "_plot.pdf")),
+                          plot = plot_pdf,
+                          device = cairo_pdf,
+                          width = 10,
+                          height = 4
+                        )
+
+                        # Path to copied Rmd
+                        tmp_rmd <- file.path(tmp_dir, "well_report.Rmd")
+
+                        # Render the document
+                        rmarkdown::render(input = tmp_rmd,
+                                          output_file = paste0("Well_", y, "_Model_Predictions.pdf"),
+                                          output_dir = output_path,
+                                          knit_root_dir = tmp_dir,
+                                          intermediates_dir = int_dir,
+                                          envir = new.env(),
+                                          params = list("well_id" = y[[1]],
+                                                        "well_location" = location,
+                                                        "well_tag_number" = pgown_well_info_Well_info$Well_Tag_number,
+                                                        "aquifer_num" = pgown_well_info_Well_info$aquifer_id,
+                                                        "aquifer_type" = pgown_well_info_Well_info$aquifer_material,
+                                                        "model_type" = paste0(recharge_type_2, "-Dominated Model"),
+                                                        "table" = table_gt))
+
 
                       }
+
 
 
                       # Summarize data for output
