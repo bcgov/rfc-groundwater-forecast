@@ -117,6 +117,7 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Hydrograph_URL,
+                              "<br>", Technical_Hydrograph_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL)) %>%
@@ -139,6 +140,7 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Hydrograph_URL,
+                              "<br>", Technical_Hydrograph_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL)) %>%
@@ -161,6 +163,7 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Hydrograph_URL,
+                              "<br>", Technical_Hydrograph_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL)) %>%
@@ -183,6 +186,7 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Hydrograph_URL,
+                              "<br>", Technical_Hydrograph_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL)) %>%
@@ -237,7 +241,7 @@ gw_map
 
 
 
-map_title_text <- paste0("<b><u>Groundwater Drought Forecasting - DEMONSTRATION PURPOSES ONLY</u></b>")
+map_title_text <- paste0("<b><u>Groundwater Level Drought Forecast</u></b>")
 
 map_title_text_body <- paste0("This project is under development and should not be used for any decision making.
                               This map is for demonstration and internal purposes at this time.
