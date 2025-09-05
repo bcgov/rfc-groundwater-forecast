@@ -244,7 +244,9 @@ gw_map
 
 map_title_text <- paste0("<b><u>RFC: Groundwater Level Drought Forecast</u></b>")
 
-map_title_text_body <- paste0("Forecast of groundwater levels being below normal for the next 14, 30, 60, and 90 days compared to historical conditions.
+map_title_text_body <- paste0("Forecast of groundwater levels being below normal
+for the next 14, 30, 60, and 90 days compared to historical conditions. Click the
+box on the top right for more forecast days and the info box on the top left for more information.
 This project is under development and should not be used for any decision making.
                               This map is for demonstration and internal purposes at this time.
                               Updated: <b>", format(Sys.time(), format = "%H:%M %a. %b. %d, %Y"), "</b>.")
@@ -299,7 +301,7 @@ info.box <- HTML(paste0(
     paste0("The groundwater level model provides forecasts up to 90 days in advance. It uses artificial neural networks, a type of machine learning,
     to relate groundwater levels to historic precipitation, temperature, and snowpack data. The model also accounts for recharge lag times,
     capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of
-    groundwater being above, below, or near normal.
+    groundwater being above, below, or near normal. The forecast will be updated daily throughout the year, unless issues with data availability arise or other issues.
                <br><br>
                RFC, Partner, and Data Links:<br>
               <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >RFC Homepage</a></u>
