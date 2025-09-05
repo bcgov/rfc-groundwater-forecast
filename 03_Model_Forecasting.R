@@ -157,4 +157,4 @@ data_table_out <- data_out %>%
 write.csv(data_table_out, paste0(output_path, "/RFC_GW_Forecast.csv"), row.names = FALSE)
 write.csv(data_table_out, paste0("output/RFC_GW_Forecast.csv"), row.names = FALSE)
 
-#### MAYBE MAKE THE OUTPUT THE LIKELYHOOD OF NORMAL/BELOW/ABOVE IN ONE ROW RATHER THAN ALL SEPERATE
+#### MAYBE MAKE THE OUTPUT THE LIKELYHOOD OF NORMAL/BELOW/ABOVE IN ONE ROW RATHER THAN ALL SEPARATE
