@@ -4,7 +4,7 @@ output:
     includes:
       in_header: well_report.tex
     latex_engine: xelatex
-    pandoc_args: ["--variable=geometry:paperwidth=8.5in,paperheight=9in,margin=0.25in"]
+    pandoc_args: ["--variable=geometry:paperwidth=8.5in,paperheight=8in,margin=0.25in"]
 params:
   well_id: NULL
   well_location: NULL
@@ -12,7 +12,11 @@ params:
   aquifer_num: NULL
   aquifer_type: NULL
   model_type: NULL
+  latest_date: NULL
+  start_year: NULL
   table: NULL
+header-includes:
+  - \usepackage{multicol}
 ---
 
 ```{r setup, include=FALSE}
@@ -29,7 +33,7 @@ library(gt)
 \end{center}
 
 \begin{center}
-\textbf{`r params$aquifer_type` Aquifer | `r params$model_type` | Forecast Issued: `r Sys.Date()`}
+\textbf{`r params$aquifer_type` Aquifer | Data since `r params$start_year`| Latest on `r format(params$latest_date, "%b-%d")` | Forecast issued: `r format(Sys.Date(), "%b-%d")`}
 \vspace{-1.5em}
 \end{center}
 
@@ -61,15 +65,22 @@ params$table %>%
   \vspace{-10pt}
 \end{wrapfigure}
 
-**Description/Explanation**: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc convallis enim non dolor sagittis efficitur. Quisque a quam eros. Suspendisse interdum arcu finibus, ullamcorper risus a, laoreet lacus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec orci tristique, tincidunt nisl semper, scelerisque mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris ornare urna eu cursus pulvinar. Morbi viverra eros tincidunt, rhoncus nisi nec, tincidunt libero. Maecenas at est et ipsum ultrices hendrerit. Aenean quis ullamcorper lorem. 
+\footnotesize 
+\begin{multicols}{2}
 
-**Disclaimer**: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+\textbf{Model Description}: The model provides water level forecasts up to 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation `r ifelse(params$model_type == "Rain-Dominated Model", "and temperature data", "temperature, and snowpack data")`. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal.
+
+\columnbreak
+
+\textbf{Disclaimer}: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+
+\end{multicols}
 
 \begin{center}
-Model Information: \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Detailed explanation of chart}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Technical reference for model}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Forecast Map}}\\
+{\small Model Information: \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Detailed explanation of chart}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{Technical reference for model}} | \textcolor{blue}{\href{https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Map.html}{Forecast Map}}\\
 
-Well Information: \textcolor{blue}{\href{`r paste0("https://aqrt.nrs.gov.bc.ca/Data/Location/Summary/Location/",params$well_id,"/Interval/Latest")`}{Real-time Data}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/well/", params$well_tag_number)`}{Well Summary}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/",params$aquifer_num)`}{Aquifer Summary}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network}{PGOWN}}
-
+Well Information: \textcolor{blue}{\href{`r paste0("https://aqrt.nrs.gov.bc.ca/Data/Location/Summary/Location/",params$well_id,"/Interval/Latest")`}{Real-time Data}} | \textcolor{blue}{\href{`r paste0("https://bcrfc.env.gov.bc.ca/Real-time_Data/Interactive_Q_process/InteractivePlots/groundwater_levels/",params$well_id,"_dailyWL.html")`}{Interactive hydrograph}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/well/", params$well_tag_number)`}{Well summary}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/",params$aquifer_num)`}{Aquifer summary}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network}{PGOWN}}
+}
 
 Issued by \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{BC River Forecast Centre}} | Updated: `r format(Sys.time(), "%Y-%m-%d %H:%M")`
 

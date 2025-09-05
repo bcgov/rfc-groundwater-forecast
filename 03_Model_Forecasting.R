@@ -146,8 +146,9 @@ data_table_out <- data_out %>%
          Predicted_75th = predicted_value_75th, Predicted_90th = predicted_value_90th,
          Predicted_Max = predicted_value_max,
          Well_Tag_number) %>%
-  mutate(Hydrograph_URL = paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Well_",Well,"_Model_Predictions.pdf"),
-         Realtime_URL = paste0("https://bcmoe-prod.aquaticinformatics.net/Data/Location/Summary/Location/",Well,"/Interval/Latest"),
+  mutate(Hydrograph_URL = paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/", Well, "_Model_Forecast.pdf"),
+         Technical_Hydrograph_URL = paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/", Well, "_Model_Forecast.jpeg"),
+         Realtime_URL = paste0("https://bcmoe-prod.aquaticinformatics.net/Data/Location/Summary/Location/", Well, "/Interval/Latest"),
          Aquifer_URL = ifelse(is.na(Aquifer_ID), "", paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/", Aquifer_ID)),
          Well_URL = ifelse(is.na(Well_Tag_number), "", paste0("https://apps.nrs.gov.bc.ca/gwells/well/", Well_Tag_number)),
          Issued_At = format(Sys.time(), "%Y-%m-%d %H:%M")) %>%

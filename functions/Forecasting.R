@@ -150,9 +150,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       # Function to classify forecast results based on RSR
                       classify_forecast_results <- function(rsr) {
                         if (rsr < 1) {
-                          return(", Forecast less sensitive to future climate")
+                          return(", forecast less sensitive to future weather")
                         } else {
-                          return(", Forecast more sensitive to future climate")
+                          return(", forecast more sensitive to future weather")
                         }
                       }
 
@@ -1641,10 +1641,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       Time_series_data_2_plot <- left_join(Time_series_data_2_plot, well_lag_time_2)
 
-                      Time_series_data_2_plot$Model <- factor(Time_series_data_2_plot$Model, levels = c("Good, Forecast less sensitive to future climate",
-                                                                                                        "Good, Forecast more sensitive to future climate",
-                                                                                                        "Fair, Forecast less sensitive to future climate",
-                                                                                                        "Fair, Forecast more sensitive to future climate"))
+                      Time_series_data_2_plot$Model <- factor(Time_series_data_2_plot$Model, levels = c("Good, forecast less sensitive to future weather",
+                                                                                                        "Good, forecast more sensitive to future weather",
+                                                                                                        "Fair, forecast less sensitive to future weather",
+                                                                                                        "Fair, forecast more sensitive to future weather"))
 
 
 
@@ -1653,10 +1653,10 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                       # Define custom color scale for performance categories
-                      performance_colors <- c('Good, Forecast less sensitive to future climate' = '#00CC00',
-                                              'Good, Forecast more sensitive to future climate' = "#99FF00",
-                                              'Fair, Forecast less sensitive to future climate' = '#FF6600',
-                                              'Fair, Forecast more sensitive to future climate' = '#FFCC33')
+                      performance_colors <- c('Good, forecast less sensitive to future weather' = '#00CC00',
+                                              'Good, forecast more sensitive to future weather' = "#99FF00",
+                                              'Fair, forecast less sensitive to future weather' = '#FF6600',
+                                              'Fair, forecast more sensitive to future weather' = '#FFCC33')
 
                       gglayers <- list(
                         theme_bw(),
@@ -1704,7 +1704,6 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         theme(legend.position = "none") +  # Remove legend
                         facet_grid(Well ~ ., scale = "free_y")+
                         scale_y_reverse()
-
                       temp_graph
 
                       # Create the second plot (temp_graph2) without the legend
@@ -1714,15 +1713,48 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       #        height = 6.5, width = 11, units = "in")
 
 
+                      temp_graph_pdf <- ggplot() +
+                        geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - Min, fill = "1) Much Below Normal (0 - 10th percentile)"), size = 1) +
+                        #   geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - per5th, fill =  ""), size = 1) +
+                        geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per25th, ymin = Waterlevel_adjustments_temp - per10th, fill = "2) Below Normal (10 - 25th percentile)"), size = 1) +
+                        geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per75th, ymin = Waterlevel_adjustments_temp - per25th, fill = "3) Normal (25 - 75th percentile)"), size = 1) +
+                        geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per90th, ymin = Waterlevel_adjustments_temp - per75th, fill = "4) Above Normal (75 - 90th percentile)"), size = 1) +
+                        #  geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per95th, ymin = Waterlevel_adjustments_temp - per90th, fill = "Above Normal (75 - 90th percentile)"), size = 1) +
+                        geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - Max, ymin = Waterlevel_adjustments_temp - per90th, fill = "5) Much Above Normal (90 - 100th percentile)"), size = 1) +
+                        geom_line(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, y = Waterlevel_adjustments_temp - per50th), linewidth = 0.1, colour = "#808080", alpha = 0.5) +
+                        scale_fill_brewer(name = "Historical Data (2004-2023)", palette = "Spectral", direction = 1) +
+                        scale_alpha_manual(name = "Historical Data (2004-2023)", values = c(1, 1, 1, 1, 1, 1, 1, 1)) +
+                        gglayers +
+                        new_scale_colour() +
+                        geom_line(data = temp, aes(x = Date, y = Waterlevel_adjustments_temp - groundwater, colour = "Recorded GW Level"), linewidth = 1) +
+                        scale_colour_manual(name = "", values = c("black")) +
+                        new_scale_colour() +
+                        geom_crossbar(data = Time_series_data_2_plot, aes(x = Date_predicted, y = Waterlevel_adjustments_temp - predicted_value_50th, ymin = Waterlevel_adjustments_temp - predicted_value_25th, ymax = Waterlevel_adjustments_temp - predicted_value_75th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_5th, ymax = Waterlevel_adjustments_temp - predicted_value_95th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        scale_colour_manual(name = "Performance", values = performance_colors) +
+                        # new_scale_colour() +
+                        #   geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_50th + ME, ymax = Waterlevel_adjustments_temp - predicted_value_50th - ME, colour = "Model Error"), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        #  scale_colour_manual(name = "", values = c("dark grey")) +
+                        # geom_vline(aes(xintercept = deterministic_forecast_data_y_last_date, colour = "Deterministic Forecast"), linetype = 2) +
+                        #geom_vline(aes(xintercept = ensemble_forecast_data_y_last_date, colour = "Ensemble Forecast"), linetype = 3) +
+                        #scale_colour_manual(name = "Climate Forecast Range", values = c("dark green", "dark blue", "steelblue2", "yellow")) +
+                        guides(
+                          color = guide_legend(reverse = TRUE)
+                        ) +
+                        theme(legend.position = "none",
+                              axis.text.x = element_text(angle = 0, hjust = 0.5, size = 11)) +  # Remove legend
+                        scale_y_reverse()
+
+
 
 
                       dummy_data <- data.frame(
                         Date_predicted = as.Date(c('2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04')),
                         fake_value = c(1, 2, 3, 4),
-                        performance = c('Good, Forecast less sensitive to future climate',
-                                        'Good, Forecast more sensitive to future climate',
-                                        'Fair, Forecast less sensitive to future climate',
-                                        'Fair, Forecast more sensitive to future climate')
+                        performance = c('Good, forecast less sensitive to future weather',
+                                        'Good, forecast more sensitive to future weather',
+                                        'Fair, forecast less sensitive to future weather',
+                                        'Fair, forecast more sensitive to future weather')
                       )
 
 
@@ -2198,9 +2230,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       #Save the final figure
 
-                      ggsave(final_figure, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 13.5, units = "in")
+                      ggsave(final_figure, filename = paste0(output_path, "/", y, "_Model_Forecast.jpeg"), height = 8, width = 13.5, units = "in")
                       ggsave(final_figure, filename = paste0("output/", y, ".jpeg"), height = 8, width = 13.5, units = "in")
-                      #  ggsave(final_figure, filename = paste0(figure_location, "Well_", y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
+                      #  ggsave(final_figure, filename = paste0(figure_location, "Well_", y, "_Model_Forecast_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
 
 
                       #simplistic image
@@ -2251,8 +2283,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       #Save the final figure
                       # JG remove for now
-                      # ggsave(final_figure_simple, filename = paste0(output_path, "/", "Well_", y, "_Model_Predictions_simple_", plot_type, ".jpeg"), height = 6, width = 10.1, units = "in")
-                      #  ggsave(final_figure, filename = paste0(figure_location, "Well_",y, "_Model_Predictions_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
+                      # ggsave(final_figure_simple, filename = paste0(output_path, "/", y, "_Model_Forecast_simple_", plot_type, ".jpeg"), height = 6, width = 10.1, units = "in")
+                      #  ggsave(final_figure, filename = paste0(figure_location, y, "_Model_Forecast_", plot_type, ".jpeg"), height = 8, width = 11.5, units = "in")
 
 
 
@@ -2261,6 +2293,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       if (generate_well_pdf) {
 
                         recharge_type_2 <- ifelse(plot_type == "snow", "Snow", "Rain")
+
+                        start_year <- temp %>%
+                          filter(!is.na(groundwater)) %>%
+                          pull(Date) %>%
+                          min() %>%
+                          year()
 
                         # Make the gt table
 
@@ -2376,7 +2414,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                         # Make the pdf plot and merge in legends
 
-                        main_plot <- temp_graph
+                        main_plot <- temp_graph_pdf
 
                         legend_pdf <- plot_grid(plot_grid(legend_plot_pdf_1,
                                                           legend_plot_pdf_2,
@@ -2430,7 +2468,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                         tryCatch({
                           rmarkdown::render(input = tmp_rmd,
-                                            output_file = paste0("Well_", y, "_Model_Predictions.pdf"),
+                                            output_file = paste0(y, "_Model_Forecast.pdf"),
                                             output_dir = output_path,
                                             knit_root_dir = tmp_dir,
                                             intermediates_dir = int_dir,
@@ -2441,6 +2479,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                                           "aquifer_num" = pgown_well_info_Well_info$aquifer_id,
                                                           "aquifer_type" = pgown_well_info_Well_info$aquifer_material,
                                                           "model_type" = paste0(recharge_type_2, "-Dominated Model"),
+                                                          "latest_date" = last_date,
+                                                          "start_year" = start_year,
                                                           "table" = table_gt))
                         }, error = function(e) {
                         })

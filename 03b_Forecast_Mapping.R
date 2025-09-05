@@ -32,6 +32,7 @@ library(sf)
 data_table_map <- data_table_out %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>%
   mutate(Hydrograph_URL = paste0("<a href = '", Hydrograph_URL, "' target='_blank' > Hydrograph and Forecast </a>"),
+         Technical_Hydrograph_URL = paste0("<a href = '", Technical_Hydrograph_URL, "' target='_blank' > Technical Hydrograph and Forecast </a>"),
          Realtime_URL = paste0("<a href = '", Realtime_URL, "' target='_blank' > Real-time Data </a>"),
          Aquifer_URL = paste0("<a href = '", Aquifer_URL, "' target='_blank' > Aquifer Summary </a>"),
          Well_URL = paste0("<a href = '", Well_URL, "' target='_blank' > Well Summary </a>")) %>%
