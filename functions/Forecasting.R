@@ -408,8 +408,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                          model_file <- paste0(model_path, "ANN_Model_",y, "_",x, ".Rdata")
-                          load(model_file)
+                          # model_file <- paste0(model_path, "ANN_Model_", y, "_", x, ".Rdata")
+                          # load(model_file)
+
+                          model_file <- paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/models/", "ANN_Model_", y[[1]], "_", x, ".Rdata") #AWS
+                          tmp_rdata <- tempfile(fileext = ".RData") # Create unique temp file per task
+                          download.file(model_file, destfile = tmp_rdata, mode = "wb") # Safely download the file and load it
+                          load(tmp_rdata)
+
 
                           # Calculate the mean and standard deviation of the variables by day
                           # need to use raw precip data
@@ -862,9 +868,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                          model_file <- paste0(model_path, "ANN_Model_", y, "_", x, ".Rdata")
-                          load(model_file)
+                          # model_file <- paste0(model_path, "ANN_Model_", y, "_", x, ".Rdata")
+                          # load(model_file)
 
+                          model_file <- paste0("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/models/", "ANN_Model_", y[[1]], "_", x, ".Rdata") #AWS
+                          tmp_rdata <- tempfile(fileext = ".RData") # Create unique temp file per task
+                          download.file(model_file, destfile = tmp_rdata, mode = "wb") # Safely download the file and load it
+                          load(tmp_rdata)
 
 
                           # Calculate the mean and standard deviation of the variables by day
