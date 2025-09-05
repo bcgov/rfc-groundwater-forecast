@@ -77,6 +77,8 @@ pkgs <- c('dplyr',
           'gt',
           'leaflet',
           'htmlwidgets',
+          'htmltools',
+          'leaflet.extras',
           'pak',
           'aws.s3')
 

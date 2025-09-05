@@ -27,6 +27,7 @@
 
 library(leaflet)
 library(sf)
+library(htmltools)
 
 # format table for mapping
 data_table_map <- data_table_out %>%
@@ -194,9 +195,9 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                      pal = pal_likelihood,
                      values = vals_likelihood,
                      opacity = 1,
-                     title = paste0("Likelihood of ",
-                                    "<br>Below Normal",
-                                    "<br>Groundwater Levels",
+                     title = paste0("Likelihood of Groundwater",
+                                    "<br>Levels Below the 25th",
+                                    "<br>Percentile (Below Normal)",
                                     "<br>in 14 days (", format(as.Date(date_14d), "%b %d"),")",
                                     "<br><br>Likelihood") ,
                      group = "Below Normal - 14 days") %>%
@@ -204,9 +205,9 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                      pal = pal_likelihood,
                      values = vals_likelihood,
                      opacity = 1,
-                     title = paste0("Likelihood of ",
-                                    "<br>Below Normal",
-                                    "<br>Groundwater Levels",
+                     title = paste0("Likelihood of Groundwater",
+                                    "<br>Levels Below the 25th",
+                                    "<br>Percentile (Below Normal)",
                                     "<br>in 30 days (", format(as.Date(date_30d), "%b %d"),")",
                                     "<br><br>Likelihood") ,
                      group = "Below Normal - 30 days") %>%
@@ -214,9 +215,9 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                      pal = pal_likelihood,
                      values = vals_likelihood,
                      opacity = 1,
-                     title = paste0("Likelihood of ",
-                                    "<br>Below Normal",
-                                    "<br>Groundwater Levels",
+                     title = paste0("Likelihood of Groundwater",
+                                    "<br>Levels Below the 25th",
+                                    "<br>Percentile (Below Normal)",
                                     "<br>in 60 days (", format(as.Date(date_60d), "%b %d"),")",
                                     "<br><br>Likelihood") ,
                      group = "Below Normal - 60 days") %>%
@@ -224,9 +225,9 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                      pal = pal_likelihood,
                      values = vals_likelihood,
                      opacity = 1,
-                     title = paste0("Likelihood of ",
-                                    "<br>Below Normal",
-                                    "<br>Groundwater Levels",
+                     title = paste0("Likelihood of Groundwater",
+                                    "<br>Levels Below the 25th",
+                                    "<br>Percentile (Below Normal)",
                                     "<br>in 90 days (", format(as.Date(date_90d), "%b %d"),")",
                                     "<br><br>Likelihood") ,
                      group = "Below Normal - 90 days") %>%
@@ -241,9 +242,10 @@ gw_map
 
 
 
-map_title_text <- paste0("<b><u>Groundwater Level Drought Forecast</u></b>")
+map_title_text <- paste0("<b><u>RFC: Groundwater Level Drought Forecast</u></b>")
 
-map_title_text_body <- paste0("This project is under development and should not be used for any decision making.
+map_title_text_body <- paste0("Forecast of groundwater levels being below normal for the next 14, 30, 60, and 90 days compared to historical conditions.
+This project is under development and should not be used for any decision making.
                               This map is for demonstration and internal purposes at this time.
                               Updated: <b>", format(Sys.time(), format = "%H:%M %a. %b. %d, %Y"), "</b>.")
 
@@ -278,12 +280,68 @@ headerHTML <- paste0("
   ",map_title_text_body,"
 </div>
 ")
+
+info.box <- HTML(paste0(
+  HTML(
+    '<div class="modal fade" id="infobox" role="dialog"><div class="modal-dialog"><!-- Modal content--><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
+  ),
+
+  # Header / Title
+  HTML(
+    paste0("<b>RFC: Groundwater Level Conditions Forecast</b>")
+  ),
+  HTML(
+    '</div><div class="modal-body">'
+  ),
+
+  # Body
+  HTML(
+    paste0("The groundwater level model provides forecasts up to 90 days in advance. It uses artificial neural networks, a type of machine learning,
+    to relate groundwater levels to historic precipitation, temperature, and snowpack data. The model also accounts for recharge lag times,
+    capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of
+    groundwater being above, below, or near normal.
+               <br><br>
+               RFC, Partner, and Data Links:<br>
+              <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >RFC Homepage</a></u>
+               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network target='_blank' > Provincial Groundwater Observation Well Network (PGOWN) </a></u>
+               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network/active-wells target='_blank' >List of active PGOWN wells</a></u>
+               | <u><a href=https://bcmoe-prod.aquaticinformatics.net/ target='_blank' >Real-time water data tool</a></u>
+               | <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
+               | <u>OTHER LINKS, DATA SOURCES (ECCC, SNOW)</u>
+
+               <br><br>
+               <h4>Disclaimer</h4>
+               Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data).
+               Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+               Use the information provided with caution and at your own risk.
+               <br><br>
+               Although every effort has been made to provide accurate information and locations, the Government of British
+               Columbia makes no representation or warranties regarding the accuracy of information on or linked from this map, nor will
+               it accept responsibility for errors or omissions. Access to and/or content of this map may be suspended,
+               discontinued, or altered, in part or in whole, at any time, for any reason, with or without prior notice,
+               at the discretion of the Government of British Columbia.
+               <br><br>
+              <u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' >Copyright</a></u>
+              | <u><a href=https://www2.gov.bc.ca/gov/content/home/disclaimer target='_blank' >Disclaimer</a></u>
+              | <u><a href=http://www2.gov.bc.ca/gov/admin/privacy.page target='_blank' >Privacy</a></u>
+              | <u><a href=https://www2.gov.bc.ca/gov/content/home/accessible-government target='_blank' >Accessibility</a></u>
+          <br><u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' > Copyright Province of British Columbia </a></u>")
+  ),
+  # Closing divs
+  HTML('</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div>')
+))
+
+
 gw_map <- gw_map  %>%
   htmlwidgets::prependContent(htmltools::HTML(headerCSS)) %>%
-  htmlwidgets::prependContent(htmltools::HTML(headerHTML))
-
-
-#gw_map
+  htmlwidgets::prependContent(htmltools::HTML(headerHTML))%>%
+  ##### Add Info box button ----
+leaflet.extras::addBootstrapDependency() %>% # Add Bootstrap to be able to use a modal
+  addEasyButton(easyButton(icon = "fa-info-circle", title = "Map Information and Disclaimer",
+                           onClick = JS("function(btn, map){ $('#infobox').modal('show'); }")
+  )) %>% # Trigger the infobox
+  htmlwidgets::appendContent(info.box)
+gw_map
 
 htmlwidgets::saveWidget(widget = gw_map,
                         file = paste0(output_path, "/Groundwater_Drought_Forecast_Map.html"),
