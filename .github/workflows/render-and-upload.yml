@@ -39,6 +39,7 @@ jobs:
            libgeos-dev \
            libsqlite3-dev \
            libudunits2-dev \
+           libmagick++-dev
 
 
       - name: Install packages
