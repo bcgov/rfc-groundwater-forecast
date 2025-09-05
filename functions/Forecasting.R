@@ -2426,20 +2426,24 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         tmp_rmd <- file.path(tmp_dir, "well_report.Rmd")
 
                         # Render the document
-                        rmarkdown::render(input = tmp_rmd,
-                                          output_file = paste0("Well_", y, "_Model_Predictions.pdf"),
-                                          output_dir = output_path,
-                                          knit_root_dir = tmp_dir,
-                                          intermediates_dir = int_dir,
-                                          envir = new.env(),
-                                          params = list("well_id" = y[[1]],
-                                                        "well_location" = location,
-                                                        "well_tag_number" = pgown_well_info_Well_info$Well_Tag_number,
-                                                        "aquifer_num" = pgown_well_info_Well_info$aquifer_id,
-                                                        "aquifer_type" = pgown_well_info_Well_info$aquifer_material,
-                                                        "model_type" = paste0(recharge_type_2, "-Dominated Model"),
-                                                        "table" = table_gt))
 
+
+                        tryCatch({
+                          rmarkdown::render(input = tmp_rmd,
+                                            output_file = paste0("Well_", y, "_Model_Predictions.pdf"),
+                                            output_dir = output_path,
+                                            knit_root_dir = tmp_dir,
+                                            intermediates_dir = int_dir,
+                                            envir = new.env(),
+                                            params = list("well_id" = y[[1]],
+                                                          "well_location" = location,
+                                                          "well_tag_number" = pgown_well_info_Well_info$Well_Tag_number,
+                                                          "aquifer_num" = pgown_well_info_Well_info$aquifer_id,
+                                                          "aquifer_type" = pgown_well_info_Well_info$aquifer_material,
+                                                          "model_type" = paste0(recharge_type_2, "-Dominated Model"),
+                                                          "table" = table_gt))
+                        }, error = function(e) {
+                        })
 
                       }
 
