@@ -28,13 +28,13 @@
 # Run config setup
 source("01_ConfigInputs.R")
 
-# # Run the model
-# source("03_Model_Forecasting.R")
-#
-# # Save maps
-# source("03b_Forecast_Mapping.R")
+# Run the model
+source("03_Model_Forecasting.R")
+
+# Save maps
+source("03b_Forecast_Mapping.R")
 
 # Put results on ObjectStore
-# source("99_objectstore.R")
+source("99_objectstore.R")
 
 
