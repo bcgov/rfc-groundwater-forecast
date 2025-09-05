@@ -27,7 +27,8 @@ ANN_hyper_parameters_calibration <- function(Time_series_data, pgown_well_info, 
 
   simulated_data <- foreach(
     y = Well_list, .combine = rbind,
-    .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv", "nnet", "xgboost",
+    .packages = c("ggpubr", "dplyr", "tidyr", "lubridate", "ggplot2", "purrr",
+                  "forcats", "mgcv", "nnet", "xgboost",
                   "randomForest", "zoo", "ggnewscale", "cowplot"))
   %dopar% {
 

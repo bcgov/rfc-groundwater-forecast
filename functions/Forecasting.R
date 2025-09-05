@@ -79,7 +79,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
   simulated_data <- foreach(
     y = Well_list, .combine = rbind,
-    .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv",
+    .packages = c("ggpubr", "dplyr", "tidyr", "lubridate", "ggplot2", "purrr", "forcats", "mgcv",
                   "randomForest", "zoo", "ggnewscale",
                   "grid", "cowplot", "nnet", "magick")) %dopar% {
 

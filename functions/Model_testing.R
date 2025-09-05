@@ -54,7 +54,7 @@ Model_testing <- function(Time_series_data, pgown_well_info, forecast_days, num_
   #run calculations for each well in parellel
 
   simulated_data <- foreach(y = Well_list, .combine = rbind,
-                            .packages = c("ggpubr", "dplyr", "tidyverse", "mgcv",
+                            .packages = c("ggpubr", "dplyr", "tidyr", "lubridate", "ggplot2", "purrr", "forcats", "mgcv",
                                           "randomForest","zoo","ggnewscale", "cowplot","nnet")
                             ) %dopar% {
                              # filter data by well
