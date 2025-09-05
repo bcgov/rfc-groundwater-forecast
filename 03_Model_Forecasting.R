@@ -35,9 +35,9 @@ source("functions/dl_ensemble_forecast.R")
 
 ## Create directories  ---------------------------------------------------------
 
-output_path <- paste0(figure_location, "previous_forecasts/", as.character(Sys.Date()))
-dir.create(paste0(figure_location, "/"), showWarnings = FALSE)
-dir.create(output_path, showWarnings = FALSE)
+output_path <- file.path(figure_location, "previous_forecasts/", as.character(Sys.Date()))
+dir.create(file.path(figure_location, "/"), showWarnings = FALSE, recursive = TRUE)
+dir.create(output_path, showWarnings = FALSE, recursive = TRUE)
 
 
 ## Loop through each region and run forecasting scripts  -----------------------
