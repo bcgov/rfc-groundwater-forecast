@@ -44,14 +44,38 @@ for (file_path in all_files) {
   # Determine S3 object key (relative path from output_path)
   relative_key <- sub(paste0(normalizePath(output_path), .Platform$file.sep), "", file_path, fixed = TRUE)
 
+  file_ext <- sub(".*\\.", "", relative_key)
+
+
   message("Uploading: ", relative_key)
 
-  if (relative_key == "Groundwater_Drought_Forecast_Map.html") {
+  if (file_ext == "html") {
     put_object(file = file_path,
                object = relative_key,
                bucket = bucket,
                region = region,
                headers = list(`Content-Type` = "text/html"),
+               acl = "public-read")
+
+  } else if (file_ext == "pdf") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket,
+               region = region,
+               headers = list(
+                 `Content-Type` = "application/pdf",
+                 `Content-Disposition` = "inline"
+               ),               acl = "public-read")
+
+  } else if (file_ext == "jpeg") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket,
+               region = region,
+               headers = list(
+                 `Content-Type` = "image/jpeg",
+                 `Content-Disposition` = "inline"
+               ),
                acl = "public-read")
 
   } else {
@@ -63,4 +87,67 @@ for (file_path in all_files) {
 
   }
 }
+
+# save in a date folder
+folder_name <- as.character(Sys.Date())  # include trailing slash
+
+# Create an empty object to simulate a folder
+put_object(file = rawConnection(raw(0)),
+           object = paste0(folder_name, "/"),
+           bucket = bucket,
+           region = region,
+           acl = "public-read")
+
+# new bucket to put files
+bucket_date <- paste0(bucket, "/", folder_name)
+
+for (file_path in all_files) {
+
+  # Determine S3 object key (relative path from output_path)
+  relative_key <- sub(paste0(normalizePath(output_path), .Platform$file.sep), "", file_path, fixed = TRUE)
+
+  file_ext <- sub(".*\\.", "", relative_key)
+
+
+  message("Uploading: ", relative_key)
+
+  if (file_ext == "html") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket_date,
+               region = region,
+               headers = list(`Content-Type` = "text/html"),
+               acl = "public-read")
+
+  } else if (file_ext == "pdf") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket_date,
+               region = region,
+               headers = list(
+                 `Content-Type` = "application/pdf",
+                 `Content-Disposition` = "inline"
+               ),               acl = "public-read")
+
+  } else if (file_ext == "jpeg") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket_date,
+               region = region,
+               headers = list(
+                 `Content-Type` = "image/jpeg",
+                 `Content-Disposition` = "inline"
+               ),
+               acl = "public-read")
+
+  } else {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket_date,
+               region = region,
+               acl = "public-read")
+
+  }
+}
+
 

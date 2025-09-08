@@ -8,6 +8,8 @@ R scripts for forecasting groundwater levels in BC's
 [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network) 
 wells using artificial neural network computational models.
 
+Results of the forecast model can be found on the [Groundwater Level Drought Forecast Map](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Map.html). 
+
 
 ### Project Status
 
