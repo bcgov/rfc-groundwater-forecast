@@ -89,7 +89,7 @@ for (file_path in all_files) {
 }
 
 # save in a date folder
-folder_name <- as.character(Sys.Date())  # include trailing slash
+folder_name <- paste0("previous_forecasts/", Sys.Date())  # include trailing slash
 
 # Create an empty object to simulate a folder
 put_object(file = rawConnection(raw(0)),
@@ -102,6 +102,8 @@ put_object(file = rawConnection(raw(0)),
 bucket_date <- paste0(bucket, "/", folder_name)
 
 for (file_path in all_files) {
+
+  # file_path <- all_files[195]
 
   # Determine S3 object key (relative path from output_path)
   relative_key <- sub(paste0(normalizePath(output_path), .Platform$file.sep), "", file_path, fixed = TRUE)
@@ -148,6 +150,22 @@ for (file_path in all_files) {
                acl = "public-read")
 
   }
+
+
+  # put the csv files in the dail_csv folder
+  if (relative_key %in% c("RFC_GW_Forecast.csv", "predictive_forecast_results.csv")) {
+
+    file_name <- sub("\\.[^.]*$", "", relative_key)
+
+    put_object(file = file_path,
+               object = paste0(file_name, "_", Sys.Date(), ".csv"),
+               bucket = paste0(bucket, "/previous_forecasts/daily_csv"),
+               region = region,
+               acl = "public-read")
+  }
+
 }
+
+
 
 
