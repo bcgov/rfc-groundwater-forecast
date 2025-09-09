@@ -2,7 +2,7 @@ name: Groundwater Level Forecast Modeling
 
 on:
   schedule:
-    - cron: '0 20 * * *'  # Daily at noonish Pacific (20:00 UTC)
+    - cron: '0 18 * * *'  # Daily at noonish Pacific (20:00 UTC)
     - cron: '0 3 * * *'  # Daily at 8pm Pacific (03:00 UTC)
   push:
     branches: [main]

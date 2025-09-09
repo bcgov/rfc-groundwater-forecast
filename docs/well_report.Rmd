@@ -68,10 +68,9 @@ params$table %>%
 \footnotesize 
 \begin{multicols}{2}
 
-\textbf{Model Description}: The model uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, for some wells, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This anal-
+\textbf{Model Description}: The model uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, for some wells, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term data records, patterns, and trends.
 
 \columnbreak
-ysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term data records, patterns, and trends.
 
 \textbf{Disclaimer}: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
 
