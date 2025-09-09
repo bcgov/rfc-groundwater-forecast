@@ -42,9 +42,12 @@ dir.create(output_path, showWarnings = FALSE, recursive = TRUE)
 
 ## Loop through each region and run forecasting scripts  -----------------------
 
+
 for (i in Regional_group_list) {
 
   # i <- Regional_group_list[6]
+
+  message(paste0("Starting model group: ", i))
 
   pgown_well_info <- pgown_well_info_all %>%
     filter(Regional_group == i) #%>%
@@ -95,6 +98,7 @@ for (i in Regional_group_list) {
 }
 
 
+message("Combining forecasts...")
 
 ####  Combine forecast files into single outputs
 

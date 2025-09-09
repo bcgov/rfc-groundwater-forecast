@@ -2375,6 +2375,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             locations = cells_body(columns = 1:2)
                           )
 
+                        # # library(webshot2) ### add to config file
+                        # gtsave(table_gt, "test.png",
+                        #        vwidth = 750)
 
                         # Make the pdf plot and merge in legends
 
@@ -2428,8 +2431,6 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         tmp_rmd <- file.path(tmp_dir, "well_report.Rmd")
 
                         # Render the document
-
-
                         tryCatch({
                           rmarkdown::render(input = tmp_rmd,
                                             output_file = paste0(y, "_Model_Forecast.pdf"),

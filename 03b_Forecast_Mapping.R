@@ -25,6 +25,8 @@
 #
 
 
+message("Mapping forecasts...")
+
 library(leaflet)
 library(sf)
 library(htmltools)
@@ -298,18 +300,27 @@ info.box <- HTML(paste0(
 
   # Body
   HTML(
-    paste0("The groundwater level model provides forecasts up to 90 days in advance. It uses artificial neural networks, a type of machine learning,
-    to relate groundwater levels to historic precipitation, temperature, and snowpack data. The model also accounts for recharge lag times,
+    paste0("This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning,
+    to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times,
     capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of
-    groundwater being above, below, or near normal. The forecast will be updated daily throughout the year, unless issues with data availability arise or other issues.
+    groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th
+    percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term
+    records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability
+    or other issues arise.
+                   <br><br>
+               Model Links:<br>
+              <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Model Explanation</a></u>
+               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' > Technical reference for model </a></u>
+               | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Model Code (GitHub)</a></u>
                <br><br>
-               RFC, Partner, and Data Links:<br>
+               Related Links:<br>
               <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >RFC Homepage</a></u>
                | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network target='_blank' > Provincial Groundwater Observation Well Network (PGOWN) </a></u>
                | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network/active-wells target='_blank' >List of active PGOWN wells</a></u>
                | <u><a href=https://bcmoe-prod.aquaticinformatics.net/ target='_blank' >Real-time water data tool</a></u>
+               | <u><a href=https://climate.weather.gc.ca/ target='_blank' >ECCC Climate Data</a></u>
+               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/water-science-data/water-data-tools/snow-survey-data target='_blank' >BC Snow Program</a></u>
                | <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
-               | <u>OTHER LINKS, DATA SOURCES (ECCC, SNOW)</u>
 
                <br><br>
                <h4>Disclaimer</h4>

@@ -65,10 +65,10 @@ params$table %>%
   \vspace{-10pt}
 \end{wrapfigure}
 
-\footnotesize 
+\scriptsize 
 \begin{multicols}{2}
 
-\textbf{Model Description}: The model uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, for some wells, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term data records, patterns, and trends.
+\textbf{Note}: Forecasts provide a range of possible conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for a well. Data should be interpreted with the context of long-term records, patterns, and trends.
 
 \columnbreak
 
@@ -82,7 +82,7 @@ params$table %>%
 Well Information: \textcolor{blue}{\href{`r paste0("https://aqrt.nrs.gov.bc.ca/Data/Location/Summary/Location/",params$well_id,"/Interval/Latest")`}{Real-time Data}} | \textcolor{blue}{\href{`r paste0("https://bcrfc.env.gov.bc.ca/Real-time_Data/Interactive_Q_process/InteractivePlots/groundwater_levels/",params$well_id,"_dailyWL.html")`}{Interactive hydrograph}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/well/", params$well_tag_number)`}{Well summary}} | \textcolor{blue}{\href{`r paste0("https://apps.nrs.gov.bc.ca/gwells/aquifers/",params$aquifer_num)`}{Aquifer summary}} | \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network}{PGOWN}}
 }
 
-Issued by \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{BC River Forecast Centre}} | Updated: `r format(Sys.time(), "%Y-%m-%d %H:%M")`
+Issued by \textcolor{blue}{\href{https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre}{BC River Forecast Centre}} on `r format(Sys.time(), "%Y-%m-%d %H:%M")`
 
 \end{center}
 
