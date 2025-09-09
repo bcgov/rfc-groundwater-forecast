@@ -42,7 +42,6 @@ dir.create(output_path, showWarnings = FALSE, recursive = TRUE)
 
 ## Loop through each region and run forecasting scripts  -----------------------
 
-
 for (i in Regional_group_list) {
 
   # i <- Regional_group_list[6]
