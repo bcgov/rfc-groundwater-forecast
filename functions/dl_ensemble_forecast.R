@@ -13,7 +13,7 @@ dl_ensemble_forecast <- function(pgown_well_info, data_location) {
     gather(c(2:1450), key = "Station", value = Value) %>%
     mutate(station_name_RF_forecast = str_sub(Station, start = 1L, end = 3L)) %>%
     mutate(Variable = str_sub(Station, start = -2L, end = -1L)) %>%
-    dplyr::select(-Station)% >%
+    dplyr::select(-Station) %>%
     mutate(Value = as.numeric(Value)) %>%
     spread(key = Variable, value = Value) %>%
     mutate(TA = (TN + TX) / 2)
