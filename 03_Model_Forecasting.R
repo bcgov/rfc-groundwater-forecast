@@ -64,7 +64,7 @@ for (i in Regional_group_list) {
   Time_series_data <- full_join(pgown_data, climate_data, by = c("Date", "Well")) %>%
     full_join(snow_data, by = c("Date", "Well")) %>%
     filter(Date >= as.Date("2004-01-01")) %>%
-    pad(by = "Date", group = c("Well")) %>%
+    pad(by = "Date", group = c("Well"), interval = "day") %>%
     group_by(Well) %>%
     fill(Snow_influenced, .direction = "downup") %>%
     mutate(SWE = ifelse(month(Date) >= 8 & month(Date) <= 10, ifelse(is.na(SWE), 0, SWE), SWE)) %>%
