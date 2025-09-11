@@ -30,6 +30,8 @@ message("Mapping forecasts...")
 library(leaflet)
 library(sf)
 library(htmltools)
+library(gt)
+
 
 # format table for mapping
 data_table_map <- data_table_out %>%
@@ -46,6 +48,10 @@ data_table_map <- data_table_out %>%
                                 Conditions == "2) Normal - 25th to 75th percentile" ~ "Normal",
                                 Conditions == "3) Below Normal - below 25th percentile" ~ "Below Normal",
                                 Conditions == "No forecast available (no recent data)" ~ "Not Available"))
+
+
+## Map the data
+
 
 # table for each forecast
 forecast_14d <- data_table_map %>%
@@ -244,127 +250,93 @@ gw_map
 
 
 
-map_title_text <- paste0("<b><u>RFC: Groundwater Level Drought Forecast</u></b>")
+forecast_date <- max(data_table_map$Forecast_Date, na.rm = TRUE)
 
-map_title_text_body <- paste0("**This project is under development.** Forecast of groundwater levels being below normal
-for the next 14, 30, 60, and 90 days compared to historical conditions. Click the layer
-box on the top right for more forecast days and the info box on the top left for more information.
-Updated: <b>", format(Sys.time(), format = "%H:%M %a. %b. %d, %Y"), "</b>.")
+data_table_table <- data_table_map %>%
+  st_drop_geometry() %>%
+  filter(Conditions == "Below Normal") %>%
+  group_by(Forecast_Days) %>%
+  mutate(Forecast_Date = paste0(Forecast_Days, " days (", format(max(Predicted_Date),"%b-%d"), ")")) %>%
+  ungroup() %>%
+  mutate(Aquifer = paste0("<a href = https://apps.nrs.gov.bc.ca/gwells/aquifers/", Aquifer_ID," target='_blank'>", Aquifer_ID," </a>"),
+         Aquifer = purrr::map(Aquifer, gt::html),
+         Location = paste0("<a href = https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/", Well, "_Model_Forecast.pdf target='_blank' >", Location," </a>"),
+         Location = purrr::map(Location, gt::html),
+         Well = paste0("<a href = https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/", Well, "_Model_Forecast.pdf target='_blank' >", Well," </a>"),
+         Well = purrr::map(Well, gt::html)) %>%
+  ungroup() %>%
+  select(Well, Region, Location, Latest = Latest_Conditions,
+         Forecast_Date, Likelihood_Category) %>%
+  pivot_wider(names_from = Forecast_Date, values_from = Likelihood_Category)
+names(data_table_table)[names(data_table_table)=="Latest"] <- paste0("Latest (", format(max(data_table_map$Latest_Date, na.rm = TRUE),"%b-%d"), ")")
 
 
-headerCSS <- "
-<style>
-  .leaflet-container {
-    position: relative;
+
+# Make the GT table
+
+gw_table <- gt(data_table_table %>%
+  group_by(Region)) %>%
+  cols_align(align = "left",
+    columns = 3) %>%
+  cols_align(align = "center",
+             columns = 4:7) %>%
+  tab_style(style = cell_fill(color = "lightgreen"),
+    locations = cells_body(
+      columns = 4,
+      rows = data_table_table[[4]] == "Normal")) %>%
+  tab_style(style = cell_fill(color = "lightblue"),
+            locations = cells_body(
+              columns = 4,
+              rows = data_table_table[[4]] == "Above Normal")) %>%
+  tab_style(style = cell_fill(color = "lightpink"),
+            locations = cells_body(
+              columns = 4,
+              rows = data_table_table[[4]] == "Below Normal")) %>%
+  gt::tab_style(style = gt::cell_text(weight = "bold", size = px(16)),
+                locations = gt::cells_column_labels()) %>%
+  gt::tab_style(style = gt::cell_text(weight = "bold", size = px(15)),
+                locations = gt::cells_column_spanners()) %>%
+  gt::tab_style(style = list(gt::cell_text(weight = "bold", size = px(15), align = "center"),
+                             cell_fill(color = "gray95")),
+                locations = gt::cells_row_groups()) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "#767676",
+      weight = px(2),
+      style = "solid"
+    ),
+    locations = cells_body(columns = 3:4)
+  ) %>%
+  tab_style(
+    style = cell_text(size = px(14)),  # adjust size as needed
+    locations = cells_body()
+  )
+
+
+# Add colours to the table
+for (i in 5:8) {
+  for (j in seq_along(levs_likelihood)) {
+    gw_table <- gw_table %>%
+      tab_style(
+        style = cell_fill(color = cols_likelihood[j]),
+        locations = cells_body(
+          columns = i,
+          rows = data_table_table[[i]] == levs_likelihood[j]
+        )
+      )
   }
-  #header {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    background-color: rgba(35, 64, 117, 0.7); /* Change background color and transparency here */
-    color: white;
-    text-align: center;
-    padding: 5px 50px 5px 50px; /* 10px top/bottom and 20px left/right */
-    font-size: 14px;
-    z-index: 1000; /* Ensure the header stays above other map elements */
-    max-width: calc(100% - 0px); /* Limit width to 100% minus padding (20px on each side) */
-    margin: 0 auto; /* Center the header horizontally */
-    font-family: 'Calibri', sans-serif; /* Change font type here */
-    border-bottom: 4px solid #e3a82b; /* Add thin line at the bottom with hex color */
-  }
-</style>
-"
-
-# HTML for the header
-headerHTML <- paste0("
-<div id='header'>
-  <font size='4'>",map_title_text,"</font><br>
-  ",map_title_text_body,"
-</div>
-")
-
-info.box <- HTML(paste0(
-  HTML(
-    '<div class="modal fade" id="infobox" role="dialog"><div class="modal-dialog"><!-- Modal content--><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
-  ),
-
-  # Header / Title
-  HTML(
-    paste0("<b>RFC: Groundwater Level Conditions Forecast</b>")
-  ),
-  HTML(
-    '</div><div class="modal-body">'
-  ),
-
-  # Body
-  HTML(
-    paste0("This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning,
-    to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times,
-    capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of
-    groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th
-    percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term
-    records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability
-    or other issues arise.
-                   <br><br>
-               Model Links:<br>
-              <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Model explanation</a></u>
-               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Technical reference </a></u>
-               | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
-               <br><br>
-               Related Links:<br>
-              <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >RFC Homepage</a></u>
-               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network target='_blank' > Provincial Groundwater Observation Well Network (PGOWN) </a></u>
-               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network/active-wells target='_blank' >List of active PGOWN wells</a></u>
-               | <u><a href=https://bcmoe-prod.aquaticinformatics.net/ target='_blank' >Real-time water data tool</a></u>
-               | <u><a href=https://climate.weather.gc.ca/ target='_blank' >ECCC Climate Data</a></u>
-               | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/water-science-data/water-data-tools/snow-survey-data target='_blank' >BC Snow Program</a></u>
-               | <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
-
-               <br><br>
-               <h4>Disclaimer</h4>
-               Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data).
-               Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
-               Use the information provided with caution and at your own risk.
-               <br><br>
-               Although every effort has been made to provide accurate information and locations, the Government of British
-               Columbia makes no representation or warranties regarding the accuracy of information on or linked from this map, nor will
-               it accept responsibility for errors or omissions. Access to and/or content of this map may be suspended,
-               discontinued, or altered, in part or in whole, at any time, for any reason, with or without prior notice,
-               at the discretion of the Government of British Columbia.
-               <br><br>
-              <u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' >Copyright</a></u>
-              | <u><a href=https://www2.gov.bc.ca/gov/content/home/disclaimer target='_blank' >Disclaimer</a></u>
-              | <u><a href=http://www2.gov.bc.ca/gov/admin/privacy.page target='_blank' >Privacy</a></u>
-              | <u><a href=https://www2.gov.bc.ca/gov/content/home/accessible-government target='_blank' >Accessibility</a></u>
-          <br><u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' > Copyright Province of British Columbia </a></u>")
-  ),
-  # Closing divs
-  HTML('</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div>')
-))
+}
+# gw_table
 
 
-gw_map <- gw_map  %>%
-  htmlwidgets::prependContent(htmltools::HTML(headerCSS)) %>%
-  htmlwidgets::prependContent(htmltools::HTML(headerHTML))%>%
-  ##### Add Info box button ----
-leaflet.extras::addBootstrapDependency() %>% # Add Bootstrap to be able to use a modal
-  addEasyButton(easyButton(icon = "fa-info-circle", title = "Map Information and Disclaimer",
-                           onClick = JS("function(btn, map){ $('#infobox').modal('show'); }")
-  )) %>% # Trigger the infobox
-  htmlwidgets::appendContent(info.box)
-gw_map
+rmarkdown::render(input = "docs/province_report.Rmd",
+                  output_file = "Groundwater_Drought_Forecast_Report.html",
+                  output_dir = "output/",
+                  params = list("map" = gw_map,
+                                "table" = gw_table))
 
-htmlwidgets::saveWidget(widget = gw_map,
-                        file = paste0(output_path, "/Groundwater_Drought_Forecast_Map.html"),
-                        selfcontained = TRUE,
-                        title = "B.C. Groundwater Drought Forecast")
-htmlwidgets::saveWidget(widget = gw_map,
-                        file = paste0("output/Groundwater_Drought_Forecast_Map.html"),
-                        selfcontained = TRUE,
-                        title = "B.C. Groundwater Drought Forecast")
 
-# remove building files
-unlink(paste0(output_path, "/Groundwater_Drought_Forecast_Map_files"), recursive = TRUE)
-unlink(paste0("output/Groundwater_Drought_Forecast_Map_files"), recursive = TRUE)
+
 
 

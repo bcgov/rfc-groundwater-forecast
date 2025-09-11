@@ -42,6 +42,8 @@ dir.create(output_path, showWarnings = FALSE, recursive = TRUE)
 
 ## Loop through each region and run forecasting scripts  -----------------------
 
+Regional_group_list <- Regional_group_list[6]
+
 for (i in Regional_group_list) {
 
   # i <- Regional_group_list[6]
@@ -63,6 +65,8 @@ for (i in Regional_group_list) {
 
   # Merge timeseries data
 
+  message("Joining timeseries data...")
+
   Time_series_data <- full_join(pgown_data, climate_data, by = c("Date", "Well")) %>%
     full_join(snow_data, by = c("Date", "Well")) %>%
     filter(Date >= as.Date("2004-01-01")) %>%
@@ -79,6 +83,8 @@ for (i in Regional_group_list) {
     distinct()
 
   #### MODEL -------------------------------------------------------------------
+
+  message("Running forecast model...")
 
   source("functions/Forecasting.R")
 

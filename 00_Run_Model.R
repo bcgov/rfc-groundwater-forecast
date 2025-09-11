@@ -31,8 +31,9 @@ source("01_ConfigInputs.R")
 # Run the model
 source("03_Model_Forecasting.R")
 
-# Save maps
+# Save maps and reports
 source("03b_Forecast_Mapping.R")
+source("03c_Forecast_Report.R")
 
 # Put results on ObjectStore
 source("99_objectstore.R")

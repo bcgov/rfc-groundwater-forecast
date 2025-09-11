@@ -47,6 +47,9 @@ rsconnect/
 .Rproj.user
 
 # Model files
+devel/
+batch_files/
+analyses/
 models/
 output/
 testing and calibration/
