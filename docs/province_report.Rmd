@@ -1,4 +1,5 @@
 ---
+title: "Groundwater Level Drought Forecast"
 output: 
   html_document:
     self-contained: true
@@ -26,18 +27,20 @@ body {
 </style>
 
 
+``` {r}
+# <div style="
+# background-color: rgb(35, 64, 117); 
+# padding: 10px; 
+# text-align: left;
+# border-bottom: 4px solid rgb(227, 168, 43)
+# ">
+#   <h2 style="color: white; margin: 0;">Groundwater Level Drought Forecast</h1>
+# </div>
+```
 
-<div style="
-background-color: rgb(35, 64, 117); 
-padding: 10px; 
-text-align: left;
-border-bottom: 4px solid rgb(227, 168, 43)
-">
-  <h2 style="color: white; margin: 0;">Groundwater Level Drought Forecast</h1>
-</div>
+##### Forecast issued by the BC River Forecast Centre as of `r format(params$forecast_date, "%B %d, %Y")`.
 
-#### Forecast issued by the BC River Forecast Centre as of `r format(params$forecast_date, "%B, %d, %Y")`.
-
+---
 
 This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
 
