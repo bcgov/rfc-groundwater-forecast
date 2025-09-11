@@ -330,10 +330,11 @@ for (i in 5:8) {
 # gw_table
 
 
-rmarkdown::render(input = "docs/province_report.Rmd",
+rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
                   output_file = "Groundwater_Drought_Forecast_Report.html",
-                  output_dir = "output/",
-                  params = list("map" = gw_map,
+                  output_dir = normalizePath("output/"),
+                  params = list("forecast_date" = forecast_date,
+                                "map" = gw_map,
                                 "table" = gw_table))
 
 

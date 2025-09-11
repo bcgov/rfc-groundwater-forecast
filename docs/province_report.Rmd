@@ -1,0 +1,101 @@
+---
+output: 
+  html_document:
+    self-contained: true
+params:
+  forecast_date: NULL
+  map: NULL
+  table: NULL
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+# report options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = TRUE, out.width = '100%')
+```
+
+
+<style>
+@font-face {
+  font-family: 'BCSans';
+  src: url('fonts/BCSans-Regular.otf') format('opentype');
+}
+
+body {
+  font-family: 'BCSans', sans-serif;
+}
+</style>
+
+
+
+<div style="
+background-color: rgb(35, 64, 117); 
+padding: 10px; 
+text-align: left;
+border-bottom: 4px solid rgb(227, 168, 43)
+">
+  <h2 style="color: white; margin: 0;">Groundwater Level Drought Forecast</h1>
+</div>
+
+#### Forecast issued by the BC River Forecast Centre as of `r format(params$forecast_date, "%B, %d, %Y")`.
+
+
+This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
+
+Model Links:<br>
+<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Map.html target='_blank' >Forecast Map</a></u> | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Model explanation</a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Technical reference </a></u>
+| <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
+
+
+---
+
+
+<h3 style="text-align: center;">Groundwater Levels Forecast: Below Normal Conditions</h3>
+<h5 style="text-align: center;">
+Forecast as of `r format(params$forecast_date, "%B, %d, %Y")`
+</h5>
+
+
+```{r map, echo=FALSE}
+# report options
+params$map
+```
+
+```{r table, results = "asis", warning=FALSE}
+params$table %>%
+  tab_options(
+    table.font.names = "BCSans"
+  )
+```
+
+
+
+
+### Related Links
+
+<u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >RFC Homepage</a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network target='_blank' > Provincial Groundwater Observation Well Network (PGOWN) </a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network/active-wells target='_blank' >List of active PGOWN wells</a></u>
+| <u><a href=https://bcmoe-prod.aquaticinformatics.net/ target='_blank' >Real-time water data tool</a></u>
+| <u><a href=https://climate.weather.gc.ca/ target='_blank' >ECCC Climate Data</a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/water-science-data/water-data-tools/snow-survey-data target='_blank' >BC Snow Program</a></u>
+| <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
+
+\columnbreak
+
+### Disclaimer
+
+Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+
+Although every effort has been made to provide accurate information and locations, the Government of British
+Columbia makes no representation or warranties regarding the accuracy of information on or linked from this map, nor will
+it accept responsibility for errors or omissions. Access to and/or content of this map may be suspended,
+discontinued, or altered, in part or in whole, at any time, for any reason, with or without prior notice,
+at the discretion of the Government of British Columbia.
+
+<u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' >Copyright</a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/home/disclaimer target='_blank' >Disclaimer</a></u>
+| <u><a href=http://www2.gov.bc.ca/gov/admin/privacy.page target='_blank' >Privacy</a></u>
+| <u><a href=https://www2.gov.bc.ca/gov/content/home/accessible-government target='_blank' >Accessibility</a></u>
+<br><u><a href=https://www2.gov.bc.ca/gov/content/home/copyright target='_blank' > Copyright Province of British Columbia </a></u>
+
