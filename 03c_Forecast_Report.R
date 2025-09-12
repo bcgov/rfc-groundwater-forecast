@@ -250,6 +250,8 @@ gw_map
 
 
 
+# Make the GT table
+
 forecast_date <- max(data_table_map$Forecast_Date, na.rm = TRUE)
 
 data_table_table <- data_table_map %>%
@@ -270,9 +272,6 @@ data_table_table <- data_table_map %>%
   pivot_wider(names_from = Forecast_Date, values_from = Likelihood_Category)
 names(data_table_table)[names(data_table_table)=="Latest"] <- paste0("Latest (", format(max(data_table_map$Latest_Date, na.rm = TRUE),"%b-%d"), ")")
 
-
-
-# Make the GT table
 
 gw_table <- gt(data_table_table %>%
   group_by(Region)) %>%
@@ -329,7 +328,7 @@ for (i in 5:8) {
 }
 # gw_table
 
-
+# render report
 rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
                   output_file = "Groundwater_Drought_Forecast_Report.html",
                   output_dir = normalizePath("output/"),
@@ -337,6 +336,7 @@ rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
                                 "map" = gw_map,
                                 "table" = gw_table))
 
+# render archived report
 rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
                   output_file = "Groundwater_Drought_Forecast_Report.html",
                   output_dir = normalizePath(paste0(output_path, "/")),
