@@ -339,7 +339,7 @@ rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
 
 rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
                   output_file = "Groundwater_Drought_Forecast_Report.html",
-                  output_dir = normalizePath(paste0(output_path, "/Groundwater_Drought_Forecast_Map.html")),
+                  output_dir = normalizePath(paste0(output_path, "/")),
                   params = list("forecast_date" = forecast_date,
                                 "map" = gw_map,
                                 "table" = gw_table))
