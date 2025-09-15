@@ -80,7 +80,8 @@ pkgs <- c('dplyr',
           'htmltools',
           'leaflet.extras',
           'pak',
-          'aws.s3')
+          'aws.s3',
+          'showtext')
 
 #Queries and installs missing packages
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]

@@ -81,7 +81,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
   simulated_data <- foreach(
     y = Well_list, .combine = rbind,
     .packages = c("ggpubr", "dplyr", "tidyr", "lubridate", "ggplot2", "purrr", "forcats", "mgcv",
-                  "randomForest", "zoo", "ggnewscale",
+                  "randomForest", "zoo", "ggnewscale","showtext",
                   "grid", "cowplot", "nnet", "magick")) %dopar% {
 
                     # filter data by well
@@ -1129,7 +1129,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       # PLOTTING -----------------------------------------------------------------
 
-
+                      font_add("BCSans", normalizePath("docs/fonts/BCSans-Regular.ttf"))
+                      # showtext_auto()
 
                       #gather model predictions for plot
 
@@ -1626,7 +1627,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         ylab("Water Level Below Ground (m)"),
                         xlab(""),
                         scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day), expand = c(0,0)),
-                        theme(
+                          theme(
                           legend.position = "right",
                           legend.background = element_blank(),
                           axis.text.x = element_text(angle = 30, hjust = 1),
@@ -1785,6 +1786,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                       )
                       # plot(legend_plot)
 
+
+                      showtext_auto(TRUE)
+
                       # Legend components for pdf plot
                       legend_plot_pdf_1 <- cowplot::get_legend(
                         ggplot() +
@@ -1796,7 +1800,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             legend.position = "right",
                             legend.key.size = unit(0.5, "lines"),
                             legend.box = "vertical",
-                            legend.title = element_text(size = 9)
+                            legend.title = element_text(size = 9)#,
+                            #text = element_text(family = "BCSans")
                           )
                       )
                       # plot(legend_plot_pdf_1)
@@ -1813,7 +1818,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             legend.position = "right",
                             legend.key.size = unit(0.5, "lines"),
                             legend.box = "vertical",
-                            legend.title = element_text(size = 9)
+                            legend.title = element_text(size = 9)#,
+                            #text = element_text(family = "BCSans")
                           )
                       )
                       # plot(legend_plot_pdf_2)
@@ -1831,11 +1837,13 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             legend.position = "right",
                             legend.key.size = unit(0.5, "lines"),
                             legend.box = "vertical",
-                            legend.title = element_text(size = 9)
+                            legend.title = element_text(size = 9)#,
+                            #text = element_text(family = "BCSans")
                           )
                       )
                       # plot(legend_plot_pdf_3)
 
+                      showtext_auto(FALSE)
 
 
 
@@ -2127,26 +2135,12 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                       RF_logo <- paste0(data_location, "WLRS/English/BC_WLRS_H_RGB_pos.png")
-
                       RF_logo <- image_read(RF_logo)
-
-
-
                       RF_logo <- rasterGrob(RF_logo, interpolate = TRUE)
 
-
-
                       Hatfield_logo <- paste0(data_location, "Hatfield_Logo_Hor_Blue_RGB.png")
-
                       Hatfield_logo <- image_read(Hatfield_logo)
-
-
-
                       Hatfield_logo <- rasterGrob(Hatfield_logo, interpolate = TRUE)
-
-
-
-
 
 
                       # Arrange the plots and the table in a grid with cowplot
@@ -2212,7 +2206,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           # Note_comb,
                           cowplot::plot_grid(Hatfield_logo, RF_logo, ncol = 2, align = "h", rel_widths = c(0.4, 0.6)),
                           ncol = 1,
-                          rel_heights = c(0.6,0.25,0.15)
+                          rel_heights = c(0.6, 0.25, 0.15)
                         ),
                         ncol = 2,
                         rel_widths = c(2, 1)
@@ -2381,7 +2375,11 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                         # Make the pdf plot and merge in legends
 
-                        main_plot <- temp_graph_pdf
+                        showtext_auto(TRUE)
+
+                        main_plot <- temp_graph_pdf +
+                          theme(text = element_text(family = "BCSans"))
+
 
                         legend_pdf <- plot_grid(plot_grid(legend_plot_pdf_1,
                                                           legend_plot_pdf_2,
@@ -2426,6 +2424,9 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           width = 10,
                           height = 4
                         )
+
+                        showtext_auto(FALSE)
+
 
                         # Path to copied Rmd
                         tmp_rmd <- file.path(tmp_dir, "well_report.Rmd")
