@@ -36,11 +36,13 @@ library(gt)
 # format table for mapping
 data_table_map <- data_table_out %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>%
-  mutate(Hydrograph_URL = paste0("<a href = '", Hydrograph_URL, "' target='_blank' > Hydrograph and Forecast </a>"),
-         Technical_Hydrograph_URL = paste0("<a href = '", Technical_Hydrograph_URL, "' target='_blank' > Technical Hydrograph and Forecast </a>"),
+  mutate(Forecast_URL = paste0("<a href = '", Forecast_URL, "' target='_blank' > Forecast Hydrograph </a>"),
+         Technical_Forecast_URL = paste0("<a href = '", Technical_Forecast_URL, "' target='_blank' > Technical Forecast Hydrograph </a>"),
          Realtime_URL = paste0("<a href = '", Realtime_URL, "' target='_blank' > Real-time Data </a>"),
          Aquifer_URL = paste0("<a href = '", Aquifer_URL, "' target='_blank' > Aquifer Summary </a>"),
-         Well_URL = paste0("<a href = '", Well_URL, "' target='_blank' > Well Summary </a>")) %>%
+         Well_URL = paste0("<a href = '", Well_URL, "' target='_blank' > Well Summary </a>"),
+         Interactive_Hydrograph_URL = paste0("<a href = '", Interactive_Hydrograph_URL, "' target='_blank' > Interactive Hydrograph </a>"),
+         Static_Hydrograph_URL = paste0("<a href = '", Static_Hydrograph_URL, "' target='_blank' > Static Hydrograph </a>")) %>%
   mutate(Likelihood_Label = case_when(Likelihood < 10 ~ "<10",
                                       Likelihood > 90 ~ ">90",
                                       TRUE ~ as.character(round(Likelihood)))) %>%
@@ -125,11 +127,13 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
-                              "<br>", Hydrograph_URL,
-                              "<br>", Technical_Hydrograph_URL,
+                              "<br>", Forecast_URL,
+                              "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
-                              "<br>", Aquifer_URL)) %>%
+                              "<br>", Aquifer_URL,
+                              "<br>", Interactive_Hydrograph_URL,
+                              "<br>", Static_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_30d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -148,11 +152,13 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
-                              "<br>", Hydrograph_URL,
-                              "<br>", Technical_Hydrograph_URL,
+                              "<br>", Forecast_URL,
+                              "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
-                              "<br>", Aquifer_URL)) %>%
+                              "<br>", Aquifer_URL,
+                              "<br>", Interactive_Hydrograph_URL,
+                              "<br>", Static_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_60d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -171,11 +177,13 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
-                              "<br>", Hydrograph_URL,
-                              "<br>", Technical_Hydrograph_URL,
+                              "<br>", Forecast_URL,
+                              "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
-                              "<br>", Aquifer_URL)) %>%
+                              "<br>", Aquifer_URL,
+                              "<br>", Interactive_Hydrograph_URL,
+                              "<br>", Static_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_90d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -194,11 +202,13 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
-                              "<br>", Hydrograph_URL,
-                              "<br>", Technical_Hydrograph_URL,
+                              "<br>", Forecast_URL,
+                              "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
-                              "<br>", Aquifer_URL)) %>%
+                              "<br>", Aquifer_URL,
+                              "<br>", Interactive_Hydrograph_URL,
+                              "<br>", Static_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood,
                      values = vals_likelihood,
