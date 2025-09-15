@@ -41,7 +41,7 @@ data_table_map <- data_table_out %>%
          Aquifer_URL = paste0("<a href = '", Aquifer_URL, "' target='_blank' > Aquifer Summary </a>"),
          Well_URL = paste0("<a href = '", Well_URL, "' target='_blank' > Well Summary </a>"),
          Interactive_Hydrograph_URL = paste0("<a href = '", Interactive_Hydrograph_URL, "' target='_blank' > Interactive Hydrograph </a>"),
-         Static_Hydrograph_URL = paste0("<a href = '", Static_Hydrograph_URL, "' target='_blank' > Static Hydrograph </a>")) %>%
+         Static_Hydrograph_URL = paste0("<a href = '", Static_Hydrograph_URL, "' target='_blank' > Hydrograph and Historic Record</a>")) %>%
   mutate(Likelihood_Label = case_when(Likelihood < 10 ~ "<10",
                                       Likelihood > 90 ~ ">90",
                                       TRUE ~ as.character(round(Likelihood)))) %>%

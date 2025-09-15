@@ -38,7 +38,7 @@ body {
 # </div>
 ```
 
-##### Forecast issued by the BC River Forecast Centre as of `r format(params$forecast_date, "%B %d, %Y")`.
+##### Forecast issued by the BC River Forecast Centre on `r format(params$forecast_date, "%B %d, %Y")`.
 
 ---
 
@@ -55,7 +55,7 @@ Model Links:<br>
 
 <h3 style="text-align: center;">Groundwater Levels Forecast: Below Normal Conditions</h3>
 <h5 style="text-align: center;">
-Forecast as of `r format(params$forecast_date, "%B, %d, %Y")`
+Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 </h5>
 
 
