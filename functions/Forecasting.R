@@ -2422,6 +2422,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           height = 4
                         )
 
+                        options(browser = "/usr/bin/chromium-browser")
                         gtsave(
                           file.path(tmp_dir, paste0("Well_", y, "_table.png")),
                           data = table_gt,
