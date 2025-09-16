@@ -18,7 +18,7 @@
 #
 # ------------------------------------------------------------------------------
 # Notes/Objectives:
-# script for putting forecasts onto objectstore
+# script for putting forecasts onto objectstore, ensure files open in browser
 #
 # ==============================================================================
 
