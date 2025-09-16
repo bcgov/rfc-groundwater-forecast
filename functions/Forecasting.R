@@ -81,7 +81,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
   simulated_data <- foreach(
     y = Well_list, .combine = rbind,
     .packages = c("ggpubr", "dplyr", "tidyr", "lubridate", "ggplot2", "purrr", "forcats", "mgcv",
-                  "randomForest", "zoo", "ggnewscale","showtext",
+                  "randomForest", "zoo", "ggnewscale","showtext", "webshot2",
                   "grid", "cowplot", "nnet", "magick")) %dopar% {
 
                     # filter data by well
@@ -1627,7 +1627,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         ylab("Water Level Below Ground (m)"),
                         xlab(""),
                         scale_x_date(date_labels = ("%b"), date_breaks = "1 month", limits = c(start_day, end_day), expand = c(0,0)),
-                          theme(
+                        theme(
                           legend.position = "right",
                           legend.background = element_blank(),
                           axis.text.x = element_text(angle = 30, hjust = 1),
@@ -2246,6 +2246,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
+
                       # Markdown Report
 
                       if (generate_well_pdf) {
@@ -2369,10 +2370,6 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                             locations = cells_body(columns = 1:2)
                           )
 
-                        # # library(webshot2) ### add to config file
-                        # gtsave(table_gt, "test.png",
-                        #        vwidth = 750)
-
                         # Make the pdf plot and merge in legends
 
                         showtext_auto(TRUE)
@@ -2425,6 +2422,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           height = 4
                         )
 
+                        gtsave(
+                          file.path(tmp_dir, paste0("Well_", y, "_table.png")),
+                          data = table_gt,
+                          vwidth = 750,
+                          vheight = 1000,
+                          expand = 10
+                        )
+
                         showtext_auto(FALSE)
 
 
@@ -2450,6 +2455,102 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                                           "table" = table_gt))
                         }, error = function(e) {
                         })
+
+
+                        ### Create the png
+
+                        # read in the table
+                        table_grob <- image_read(file.path(tmp_dir, paste0("Well_", y, "_table.png")))
+                        table_grob <- rasterGrob(table_grob, interpolate = TRUE)
+
+                        logo_grob <- image_read("docs/BCID_V_RGB_rev.png")
+                        logo_grob <- rasterGrob(logo_grob, interpolate = TRUE)
+
+                        table_title <- ggdraw() +
+                          draw_label(paste0("Observation Well ", y, " - ", location),
+                                     x = 0.5, y = 0.85, hjust = 0.5, fontface = 'bold', size = 13, color = "black") +
+                          draw_label(paste0(pgown_well_info_Well_info$aquifer_material, " Aquifer | Data since ",
+                                            start_year, " | Latest on ", format(last_date, "%b-%d"),
+                                            " | Forecast issued: ", format(Sys.Date(), "%b-%d")),
+                                     x = 0.5, y = 0.4, hjust = 0.5,  size = 12, color = "black")
+
+
+                        disclaimer <- ggdraw() +
+                          draw_label(paste0("Disclaimer: Groundwater level forecasts use statistical models and third-\n",
+                                            "party data. These models have two types of errors: systematic (model\n",
+                                            "limitations) and random (input data). Forecasts may differ from actual\n",
+                                            "observations, and water levels could exceed forecast bounds. Users must\n",
+                                            "accept responsibility for their use and interpretation."),
+                                     x = 0.5, y = 0.1, hjust = 0.5, vjust = 0,
+                                     fontface = 'italic', size = 9, color = "black")
+
+
+                        banner <- ggdraw() +
+                          draw_grob(logo_grob, x = 0.9, y = 0.09, width = 0.1, height = 0.8) +
+                          draw_label(paste0("Groundwater Level Forecast"), x = 0.03, y = 0.65, hjust = 0,
+                                     fontface = "bold", size = 18, color = "white") +
+                          draw_label(paste0("Forecast of likely groundwater levels for the next 14–90 days compared to historical conditions"),
+                                     x = 0.03, y = 0.3, hjust = 0,
+                                     fontface = "bold", size = 10, color = "white") +
+                          theme(plot.background = element_rect(fill = "#234075b3"))+
+                          draw_line(
+                            x = c(0, 1), y = c(0, 0),
+                            size = 1, color = "#e3a82b"
+                          )
+
+                        footer_text <- ggdraw() +
+                          draw_label(paste0("Issued by BC River Forecast Centre on ",format(Sys.time(), "%d %b %Y %H:%M")),
+                                     x = 0.5, y = 0.6, hjust = 0.5, vjust = 0,
+                                     , size = 10, color = "black")
+
+                        blank_space <- ggplot() + theme_void()
+
+                        plot_png <- plot_grid(plot_grid(main_plot, ncol = 1),
+                                              legend_pdf,
+                                              rel_widths = c(0.6,0.3),
+                                              nrow = 1)
+
+                        note_text <- ggdraw() +
+                          draw_label("Note: Forecasts provide a range of possible conditions and are presented as likelihoods of groundwater being above, below, or near normal.\nThis analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to\nimply a steady state baseline for a well. Data should be interpreted with the context of long-term records, patterns, and trends.",
+                                     # fontface = "bold",
+                                     size = 8,
+                                     x = 0.5, y = 0.6,
+                                     hjust = 0.5, vjust = 0.5)
+
+                        disclaimer_text <- ggdraw() +
+                          draw_label("Disclaimer: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic\n(model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds.\nUsers must accept responsibility for their use and interpretation.",
+                                     # fontface = "bold",
+                                     size = 8,
+                                     x = 0.5, y = 0.9,
+                                     hjust = 0.5, vjust = 0.5)
+
+                        final_output <- plot_grid(
+                          banner,
+                          blank_space,
+                          table_title,
+                          plot_png,
+                          ggdraw() +
+                            draw_label(paste0(y, "- Likelihood (%) of Groundwater Level Conditions"),
+                                       x = 0.5, y = 0.4, vjust = 1, hjust = 0.5,  size = 12, color = "black"),
+                          plot_grid(blank_space, table_grob, blank_space, ncol = 3, rel_widths = c(0.05,0.9,0.05)),
+                          note_text,
+                          disclaimer_text,
+                          # plot_grid(note_text, note_text, ncol = 2, rel_widths = c(0.5, 0.5)),
+                          footer_text,
+                          ncol = 1,
+                          rel_heights = c(0.08,
+                                          0.02,
+                                          0.07,
+                                          0.42,
+                                          0.06,
+                                          0.26,
+                                          0.10,
+                                          0.08,
+                                          0.02)
+                        )
+
+                        save_plot(plot = final_output, filename = paste0(output_path, "/", y, "_Model_Forecast.png"),
+                                  base_width = 8.5, base_height = 8, bg = "white")
 
                       }
 

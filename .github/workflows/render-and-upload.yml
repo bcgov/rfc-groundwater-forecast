@@ -39,7 +39,8 @@ jobs:
            libgeos-dev \
            libsqlite3-dev \
            libudunits2-dev \
-           libmagick++-dev
+           libmagick++-dev \
+           chromium-browser
 
 
       - name: Install packages
