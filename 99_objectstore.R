@@ -78,6 +78,17 @@ for (file_path in all_files) {
                ),
                acl = "public-read")
 
+  } else if (file_ext == "png") {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket,
+               region = region,
+               headers = list(
+                 `Content-Type` = "image/png",
+                 `Content-Disposition` = "inline"
+               ),
+               acl = "public-read")
+
   } else {
     put_object(file = file_path,
                object = relative_key,
