@@ -307,7 +307,7 @@ info.box <- HTML(paste0(
     '</div><div class="modal-body">'
   ),
 
-  # Body
+  #  Body
   HTML(
     paste0("This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning,
     to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times,
