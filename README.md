@@ -8,6 +8,11 @@ R scripts for forecasting groundwater levels in BC's
 [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network) 
 wells using artificial neural network computational models.
 
+This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, 
+to relate groundwater levels to historic precipitation, temperature, and snowpack data. The model also accounts for recharge lag times,
+capturing how groundwater responds to hydroclimate data. Forecasts provide a range of possible conditions, derived from different combinations of past weather patterns,
+and are presented as likelihoods of groundwater being above, below, or near normal.
+
 Results of the forecast model can be found on the Groundwater Level Drought Forecast [Map](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Map.html) 
 and [Report](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Report.html). 
 
