@@ -125,6 +125,37 @@ write.csv(data_out, paste0(output_path, "/predictive_forecast_results.csv"), row
 write.csv(data_out, paste0("output/predictive_forecast_results.csv"), row.names = FALSE)
 
 
+## Save to archive
+
+# prep the data for appending
+new_data <- data_out %>%
+  mutate(likelihood = as.character(likelihood)) %>%
+  mutate(MODEL_DATE = Sys.Date()) %>%
+  select(MODEL_DATE, everything()) %>%
+  select(MODEL_DATE,Well,Forecast_Date, Date_predicted,lag_day,Model,likelihood,Latest_Conditions,
+         conditions,Date,groundwater,predicted_value_mean,predicted_value_min,predicted_value_max,
+         predicted_value_25th,predicted_value_75th,predicted_value_50th,predicted_value_90th,predicted_value_10th,predicted_value_5th,
+         predicted_value_95th,performance)
+
+# read in the archive and append the latest forecast
+archive <- read_rds("https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/previous_forecasts/daily_csv/predictive_forecast_results_archive.rds") %>%
+  filter(MODEL_DATE < Sys.Date()) %>%
+  bind_rows(new_data)
+
+# save the rds file
+file_path <- "data/predictive_forecast_results_archive.rds"
+saveRDS(archive, file_path)
+
+# Save the rds file onto objectstore
+bucket <- "rfc-conditions/groundwater_forecast/outputs"
+region <- ""
+aws.s3::put_object(file = file_path,
+                   object = paste0("predictive_forecast_results_archive.rds"),
+                   bucket = paste0(bucket, "/previous_forecasts/daily_csv"),
+                   region = region,
+                   acl = "public-read")
+
+
 # Create table for csv output for ArcGIS online and leaflet mapping
 
 # merge and format data for output
