@@ -38,4 +38,7 @@ source("03c_Forecast_Report.R")
 # Put results on ObjectStore
 source("99_objectstore.R")
 
+# Put results on ObjectStore
+source("03d_Forecast_Performance.R")
+
 
