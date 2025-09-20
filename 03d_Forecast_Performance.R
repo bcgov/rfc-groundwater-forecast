@@ -29,6 +29,11 @@ library(ggplot2)
 library(readr)
 library(showtext)
 
+# create folder
+figure_location <- "output/performance_tracking/"
+file_loc <- normalizePath(figure_location)
+dir.create(file_loc, showWarnings = FALSE)
+
 
 # Get well info
 pgown_well_info_all <- read_csv("user_inputs/Forecasting_Model_Data.csv")
@@ -116,7 +121,7 @@ for (well_id in sort(unique(archive$Well))) {
             strip.text = element_text(face = "bold", hjust = 0))
     perf_plot
 
-    ggsave(filename = paste0("output/performance_tracking/", well_id, "_performance.png"),
+    ggsave(filename = paste0(file_loc, "\\", well_id, "_performance.png"),
            plot = perf_plot,
            height = 6, width = 10)
   }
@@ -125,9 +130,6 @@ showtext_auto(FALSE)
 
 
 # load figures onto objecstore
-figure_location <- "output/performance_tracking/"
-file_loc <- normalizePath(figure_location)
-dir.create(file_loc, showWarnings = FALSE)
 
 bucket <- "rfc-conditions/groundwater_forecast/outputs/performance_tracking"
 region <- ""

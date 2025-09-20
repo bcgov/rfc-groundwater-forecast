@@ -35,10 +35,10 @@ source("03_Model_Forecasting.R")
 source("03b_Forecast_Mapping.R")
 source("03c_Forecast_Report.R")
 
-# Put results on ObjectStore
+# Put results on objectstore
 source("99_objectstore.R")
 
-# Put results on ObjectStore
+# Save performance tracking plots
 source("03d_Forecast_Performance.R")
 
 
