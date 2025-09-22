@@ -72,7 +72,7 @@ params$table %>%
 
 \columnbreak
 
-\textbf{Disclaimer}: Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data). Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+\textbf{Disclaimer}: Groundwater level forecasts use computational models and third-party data. These models have both systematic (model limitations) and random (input data) errors. Forecasts may differ from actual observations and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation. Real-time observed data may be subject to change.
 
 \end{multicols}
 

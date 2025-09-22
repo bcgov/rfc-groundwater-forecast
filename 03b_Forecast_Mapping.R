@@ -336,7 +336,7 @@ info.box <- HTML(paste0(
                <br><br>
                <h4>Disclaimer</h4>
                Groundwater level forecasts use statistical models and third-party data. These models have two types of errors: systematic (model limitations) and random (input data).
-               Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Users must accept responsibility for their use and interpretation.
+               Forecasts may differ from actual observations, and water levels could exceed forecast bounds. Real-time observed data may be subject to change. Users must accept responsibility for their use and interpretation.
                Use the information provided with caution and at your own risk.
                <br><br>
                Although every effort has been made to provide accurate information and locations, the Government of British
