@@ -121,7 +121,7 @@ for (well_id in sort(unique(archive$Well))) {
             strip.text = element_text(face = "bold", hjust = 0))
     perf_plot
 
-    ggsave(filename = paste0(file_loc, "\\", well_id, "_performance.png"),
+    ggsave(filename = normalizePath(paste0(file_loc, "/", well_id, "_performance.png")),
            plot = perf_plot,
            height = 6, width = 10)
   }
