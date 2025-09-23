@@ -81,8 +81,9 @@ pkgs <- c('dplyr',
           'leaflet.extras',
           'pak',
           'aws.s3',
-          'showtext',
-          'webshot2')
+          'showtext'#,
+          #'webshot2'
+          )
 
 #Queries and installs missing packages
 new.packages <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
