@@ -19,7 +19,7 @@ and [Report](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_foreca
 
 ### Project Status
 
-This project is under development and will be subject to a large amount of change. 
+This project is under development and will be subject to change. 
 
 This project is maintained by the River Forecast Centre in the Water Management Branch of the BC Ministry of Water, Land and Resource Stewardship.
 

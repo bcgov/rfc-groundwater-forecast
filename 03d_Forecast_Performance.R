@@ -25,6 +25,7 @@
 
 
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(readr)
 library(showtext)
@@ -33,7 +34,6 @@ library(showtext)
 figure_location <- "output/performance_tracking/"
 file_loc <- normalizePath(figure_location)
 dir.create(file_loc, showWarnings = FALSE)
-
 
 # Get well info
 pgown_well_info_all <- read_csv("user_inputs/Forecasting_Model_Data.csv")
@@ -153,26 +153,60 @@ for (file_path in all_files) {
 
 ### Determine if model correctly forecast each conditions
 
+
+# actual_conditions <- timeseries %>%
+#   select(Well, Date, Actual_Percentile = Percentile) %>%
+#   mutate(Actual_Conditions = case_when(Actual_Percentile < 25 ~ "Below Normal",
+#                                        Actual_Percentile <= 75 ~ "Normal",
+#                                        Actual_Percentile > 75 ~ "Above Normal")) %>%
+#   select(-Actual_Percentile)
+#
+#
 # results <- archive %>%
-#   left_join(timeseries %>%
-#               select(Well, Date_predicted = Date, Actual_Level = Value, Actual_Percentile = Percentile),
-#             by = join_by(Well, Date_predicted)) %>%
+#   group_by(Well, lag_day, Date_predicted) %>%
+#   filter(MODEL_DATE == max(MODEL_DATE)) %>%
 #   mutate(conditions = case_when(grepl("3) Below", conditions) ~ "Below Normal",
 #                                 grepl("2) Normal", conditions) ~ "Normal",
 #                                 grepl("1) Above", conditions) ~ "Above Normal"),
-#          Actual_Conditions = case_when(Actual_Percentile < 25 ~ "Below Normal",
-#                                        Actual_Percentile <= 75 ~ "Normal",
-#                                        Actual_Percentile > 75 ~ "Above Normal"),
 #          Likelihood_Number = as.numeric(gsub("<", "", gsub(">", "", likelihood))),
 #          Likely_Condition = case_when(Likelihood_Number > 50 ~ conditions,
 #                                       TRUE ~ NA),
-#          Forecast_Match = ifelse(Actual_Conditions == Likely_Condition, TRUE, FALSE)) %>%
-#   filter(!is.na(Likelihood_Number))
-#
-#
-#
-#
-#
+#          lag_day = paste0("Forecast_", lag_day)) %>%
+#   filter(!is.na(Likely_Condition)) %>%
+#   select(Well, Date = Date_predicted, lag_day, Likely_Condition) %>%
+#   distinct() %>%
+#   pivot_wider(names_from = lag_day, values_from = Likely_Condition) %>%
+#   left_join(actual_conditions, by = join_by(Well, Date)) %>%
+#   mutate(Match_14 = ifelse(Actual_Conditions == Forecast_14, TRUE, FALSE),
+#          Match_30 = ifelse(Actual_Conditions == Forecast_30, TRUE, FALSE),
+#          Match_60 = ifelse(Actual_Conditions == Forecast_60, TRUE, FALSE),
+#          Match_90 = ifelse(Actual_Conditions == Forecast_90, TRUE, FALSE))
+
+
+# REASSESS THIS IN 2026
+# below_normal_summary <- results %>%
+#   group_by(Well) %>%
+#   summarise(N_14 = sum(!is.na(Match_14)),
+#             N_BN_14 = sum(Actual_Conditions == "Below Normal", na.rm = TRUE),
+#             N_BN_14_Match = ifelse(N_BN_14 == 0, NA, sum(Actual_Conditions == "Below Normal" & Match_14, na.rm = TRUE)),
+#             N_30 = sum(!is.na(Match_30)),
+#             N_BN_30 = sum(Actual_Conditions == "Below Normal", na.rm = TRUE),
+#             N_BN_30_Match = ifelse(N_BN_30 == 0, NA, sum(Actual_Conditions == "Below Normal" & Match_30, na.rm = TRUE)),
+#             N_60 = sum(!is.na(Match_60)),
+#             N_BN_60 = sum(Actual_Conditions == "Below Normal", na.rm = TRUE),
+#             N_BN_60_Match = ifelse(N_BN_60 == 0, NA, sum(Actual_Conditions == "Below Normal" & Match_60, na.rm = TRUE)),
+#             N_90 = sum(!is.na(Match_90)),
+#             N_BN_90 = sum(Actual_Conditions == "Below Normal", na.rm = TRUE),
+#             N_BN_90_Match = ifelse(N_BN_90 == 0, NA, sum(Actual_Conditions == "Below Normal" & Match_90, na.rm = TRUE)))
+
+
+
+
+
+
+
+
+
 
 # forecast_analysis <- forecast %>%
 #   group_by(Well, Model, Date_predicted, lag_day) %>%
