@@ -2727,7 +2727,7 @@ if __name__ == "__main__":
 
             if username and password:
                 print(f" - Logging in directly as {username}")
-                gis = arcgis.GIS("https://www.arcgis.com", username, password)
+                gis = arcgis.GIS("https://governmentofbc.maps.arcgis.com", username, password)
             else:
                 print(" - Using stored profile credentials")
                 gis = arcgis.GIS(profile=profile, password=password)
