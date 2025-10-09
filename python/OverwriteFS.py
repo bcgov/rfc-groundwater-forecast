@@ -2717,13 +2717,23 @@ if __name__ == "__main__":
 
         print("Accessing ArcGIS Online/Enterprise...")
         try:
-            # Attempt direct username/password login first (for CI environments)
+            # Try to use command-line username/password if provided
+            if len(sys.argv) >= 3:
+                username = sys.argv[1]
+                password = sys.argv[2]
+            else:
+                username = None
+                password = None
+
             if username and password:
                 print(f" - Logging in directly as {username}")
                 gis = arcgis.GIS("https://www.arcgis.com", username, password)
             else:
                 print(" - Using stored profile credentials")
                 gis = arcgis.GIS(profile=profile, password=password)
+
+                
+                
         except Exception as e:
             print(" - Direct login failed, trying profile method...")
             gis = arcgis.GIS(profile=profile, password=password)
