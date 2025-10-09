@@ -2716,11 +2716,18 @@ if __name__ == "__main__":
                             exit( "\n\a * ERROR * Password missing for user '{}' in Profile '{}'!".format( username, profile))
 
         print("Accessing ArcGIS Online/Enterprise...")
-        if password:
-            gis = arcgis.GIS( profile=profile, password=password)	# Be sure your Profile exists!
-        else:
-            gis = arcgis.GIS( profile=profile)	# Be sure your Profile exists!
-
+        try:
+            # Attempt direct username/password login first (for CI environments)
+            if username and password:
+                print(f" - Logging in directly as {username}")
+                gis = arcgis.GIS("https://www.arcgis.com", username, password)
+            else:
+                print(" - Using stored profile credentials")
+                gis = arcgis.GIS(profile=profile, password=password)
+        except Exception as e:
+            print(" - Direct login failed, trying profile method...")
+            gis = arcgis.GIS(profile=profile, password=password)
+    
         if not gis._username:
             exit( "\n\a * ERROR * Login failed, please verify Profile!")
     else:
