@@ -19,6 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+        python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          pip install arcgis pandas requests
+
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
 
@@ -56,9 +65,18 @@ jobs:
       - name: Install latex packages with tinytex
         run: Rscript -e 'tinytex::tlmgr_install(c("anyfontsize", "fontspec", "xcolor", "tikz", "graphicx", "caption", "booktabs", "multirow", "longtable", "colortbl", "hyperref","wrapfig", "multicol"))'
 
-      - name: Run forecasting R scripts
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
-        run: Rscript -e 'source("00_Run_Model.R")'
+      # - name: Run forecasting R scripts
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
+      #   run: Rscript -e 'source("00_Run_Model.R")'
+      #
+      # - name: Upload results to ArcGIS Online
+      #   env:
+      #     ARCGIS_USER: ${{ secrets.ARCGIS_USER }}
+      #     ARCGIS_PASS: ${{ secrets.ARCGIS_PASS }}
+      #   run: |
+      #     python OverwriteFS.py $ARCGIS_USER $ARCGIS_PASS 35e7636011484ad1b047750f837e28b4 RFC_GW_Forecast output/RFC_GW_Forecast.csv
+
+
