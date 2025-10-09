@@ -77,6 +77,6 @@ jobs:
           ARCGIS_USER: ${{ secrets.ARCGIS_USER }}
           ARCGIS_PASS: ${{ secrets.ARCGIS_PASS }}
         run: |
-          python python/OverwriteFS.py $ARCGIS_USER $ARCGIS_PASS 821d4e5f0f66457497041824909fbebc output/RFC_GW_Forecast.csv
+          python python/OverwriteFS.py $ARCGIS_USER $ARCGIS_PASS 821d4e5f0f66457497041824909fbebc RFC_GW_Forecast output/RFC_GW_Forecast.csv
 
 
