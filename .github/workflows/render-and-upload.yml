@@ -72,11 +72,11 @@ jobs:
           AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
         run: Rscript -e 'source("00_Run_Model.R")'
 
-      # - name: Upload results to ArcGIS Online
-      #   env:
-      #     ARCGIS_USER: ${{ secrets.ARCGIS_USER }}
-      #     ARCGIS_PASS: ${{ secrets.ARCGIS_PASS }}
-      #   run: |
-      #     python python/OverwriteFS.py $ARCGIS_USER $ARCGIS_PASS 821d4e5f0f66457497041824909fbebc RFC_GW_Forecast output/RFC_GW_Forecast.csv
+      - name: Upload results to ArcGIS Online
+        env:
+          ARCGIS_USER: ${{ secrets.ARCGIS_USER }}
+          ARCGIS_PASS: ${{ secrets.ARCGIS_PASS }}
+        run: |
+          python python/overwrite_arcgis_item.py $ARCGIS_USER $ARCGIS_PASS 821d4e5f0f66457497041824909fbebc output/RFC_GW_Forecast.csv
 
 
