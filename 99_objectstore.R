@@ -164,7 +164,8 @@ for (file_path in all_files) {
 
 
   # put the csv files in the dail_csv folder
-  if (relative_key %in% c("RFC_GW_Forecast.csv", "predictive_forecast_results.csv")) {
+  if (relative_key %in% c("RFC_GW_Forecast.csv", "predictive_forecast_results.csv",
+                          "RFC_GW_Conditions_Forecast.csv")) {
 
     file_name <- sub("\\.[^.]*$", "", relative_key)
 

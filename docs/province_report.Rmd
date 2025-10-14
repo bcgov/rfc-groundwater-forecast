@@ -7,6 +7,7 @@ params:
   forecast_date: NULL
   map: NULL
   table: NULL
+  table2: NULL
 ---
 
 ```{r setup, echo=FALSE, include=FALSE}
@@ -72,7 +73,17 @@ params$table %>%
   )
 ```
 
+<h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions</h3>
+<h5 style="text-align: center;">
+Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
+</h5>
 
+```{r table2, results = "asis", warning=FALSE}
+params$table2 %>%
+  tab_options(
+    table.font.names = "BCSans"
+  )
+```
 
 
 ### Related Links

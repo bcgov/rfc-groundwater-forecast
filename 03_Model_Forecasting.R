@@ -212,4 +212,48 @@ data_table_out <- data_out %>%
 write.csv(data_table_out, paste0(output_path, "/RFC_GW_Forecast.csv"), row.names = FALSE)
 write.csv(data_table_out, paste0("output/RFC_GW_Forecast.csv"), row.names = FALSE)
 
+#### Make table of most likely conditions for each well for mapping and other
 
+well_likely_conditions <- data_out %>%
+  mutate(conditions = case_when(conditions == "1) Above Normal - above 75th percentile" ~ "Above Normal",
+                                conditions == "2) Normal - 25th to 75th percentile" ~ "Normal",
+                                conditions == "3) Below Normal - below 25th percentile" ~ "Below Normal",
+                                conditions == "No forecast available (no recent data)" ~ "Not Available")) %>%
+  group_by(Well, lag_day) %>%
+  summarise(
+    Likely_Conditions = {
+
+      # Replace NA conditions
+
+      # Which conditions meet the thresholds
+      high <- conditions[likelihood > 50]
+      med  <- conditions[likelihood >= 40]
+
+      if (length(high) > 0) {
+        str_c(high, collapse = " to ")
+      } else if (length(med) >= 2) {
+        str_c(med, collapse = " to ")
+      } else {
+        "Uncertain"
+      }
+    },
+    .groups = "drop"
+  ) %>%
+  mutate(Likely_Conditions = ifelse(is.na(Likely_Conditions), "Not Available", Likely_Conditions)) %>%
+  ungroup() %>%
+  dplyr::rename(Forecast_Days = lag_day) %>%
+  left_join(data_table_out %>%
+              select(Well, Location, Region, Latitude, Longitude,
+                     Aquifer_ID, Aquifer_Subtype,
+                     Forecast_Date, Latest_Date, Latest_Conditions, Predicted_Date,
+                     Forecast_Days,
+                     Forecast_Performance, Snow_Influenced,
+                     Forecast_URL, Technical_Forecast_URL, Realtime_URL,
+                     Aquifer_URL, Well_URL, Interactive_Hydrograph_URL,
+                     Static_Hydrograph_URL, Issued_At) %>%
+              unique(),
+            by = join_by(Well, Forecast_Days))
+
+# Save outputs
+write.csv(well_likely_conditions, paste0(output_path, "/RFC_GW_Conditions_Forecast.csv"), row.names = FALSE)
+write.csv(well_likely_conditions, paste0("output/RFC_GW_Conditions_Forecast.csv"), row.names = FALSE)
