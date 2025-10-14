@@ -81,7 +81,8 @@ pkgs <- c('dplyr',
           'leaflet.extras',
           'pak',
           'aws.s3',
-          'showtext'#,
+          'showtext',
+          'qpdf'#,
           #'webshot2'
           )
 
