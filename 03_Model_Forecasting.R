@@ -43,6 +43,18 @@ dir.create(paste0(figure_location, "/previous_forecasts/daily_pdf/"), showWarnin
 
 ## Loop through each region and run forecasting scripts  -----------------------
 
+
+# Filter for wells to include in the model
+
+pgown_well_info_all <- pgown_well_info_all %>%
+  filter(Include_Well)
+
+Regional_group_list <- pgown_well_info_all %>%
+  dplyr::select(Regional_group) %>%
+  distinct(Regional_group) %>%
+  dplyr::pull(Regional_group)
+Regional_group_list <- as.list(Regional_group_list)
+
 # Regional_group_list <- Regional_group_list[6]
 
 for (i in Regional_group_list) {
