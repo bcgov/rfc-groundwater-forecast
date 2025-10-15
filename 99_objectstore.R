@@ -139,8 +139,8 @@ for (file_path in all_files) {
                region = region,
                headers = list(
                  `Content-Type` = "application/pdf",
-                 `Content-Disposition` = "inline"
-               ),               acl = "public-read")
+                 `Content-Disposition` = "inline"),
+               acl = "public-read")
 
   } else if (file_ext == "jpeg") {
     put_object(file = file_path,
@@ -173,6 +173,21 @@ for (file_path in all_files) {
                object = paste0(file_name, "_", Sys.Date(), ".csv"),
                bucket = paste0(bucket, "/previous_forecasts/daily_csv"),
                region = region,
+               acl = "public-read")
+  }
+
+  # put the csv files in the dail_csv folder
+  if (relative_key %in% c("Model_Forecasts.pdf")) {
+
+    file_name <- sub("\\.[^.]*$", "", relative_key)
+
+    put_object(file = file_path,
+               object = paste0(file_name, "_", Sys.Date(), ".pdf"),
+               bucket = paste0(bucket, "/previous_forecasts/daily_pdf"),
+               region = region,
+               headers = list(
+                 `Content-Type` = "application/pdf",
+                 `Content-Disposition` = "inline"),
                acl = "public-read")
   }
 

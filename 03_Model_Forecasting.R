@@ -113,7 +113,7 @@ list_of_pdfs <- list.files(path = output_path,
                            full.names = TRUE)
 
 qpdf::pdf_combine(input = list_of_pdfs, output = normalizePath(paste0(output_path, "/Model_Forecasts.pdf")))
-qpdf::pdf_combine(input = list_of_pdfs, output = normalizePath(paste0(figure_location, "previous_forecasts/daily_pdf/Model_Forecasts_", Sys.Date(), ".pdf")))
+# qpdf::pdf_combine(input = list_of_pdfs, output = normalizePath(paste0(figure_location, "previous_forecasts/daily_pdf/Model_Forecasts_", Sys.Date(), ".pdf")))
 qpdf::pdf_combine(input = list_of_pdfs, output = normalizePath(paste0(figure_location, "Model_Forecasts.pdf")))
 
 
