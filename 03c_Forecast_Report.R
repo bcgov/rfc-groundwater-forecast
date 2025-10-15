@@ -129,7 +129,7 @@ cols_likelihood_conditions <- c("#0072B2", "#56B4E9", "#009E73",
                                 "#F0E442", "#D55E00", "tan",
                                 "gray80")
 levs_likelihood_conditions <- c("Above Normal",
-                                "Normal to Above Normal",
+                                "Above Normal to Normal",
                                 "Normal",
                                 "Normal to Below Normal",
                                 "Below Normal",
