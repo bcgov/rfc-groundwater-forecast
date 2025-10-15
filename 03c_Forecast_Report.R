@@ -563,6 +563,7 @@ conditions_table_table <- well_likely_conditions_map %>%
   pivot_wider(names_from = Forecast_Date, values_from = Likely_Conditions)
 names(conditions_table_table)[names(conditions_table_table)=="Latest"] <- paste0("Latest (", format(max(data_table_map$Latest_Date, na.rm = TRUE),"%b-%d"), ")")
 
+# mapping prep
 
 gw_conditions_table <- gt(conditions_table_table %>%
                  group_by(Region)) %>%
@@ -570,15 +571,15 @@ gw_conditions_table <- gt(conditions_table_table %>%
              columns = 3) %>%
   cols_align(align = "center",
              columns = 4:8) %>%
-  tab_style(style = cell_fill(color = "lightgreen"),
+  tab_style(style = cell_fill(color = "#009E73"),
             locations = cells_body(
               columns = 4,
               rows = conditions_table_table[[4]] == "Normal")) %>%
-  tab_style(style = cell_fill(color = "lightblue"),
+  tab_style(style = cell_fill(color = "#0072B2"),
             locations = cells_body(
               columns = 4,
               rows = conditions_table_table[[4]] == "Above Normal")) %>%
-  tab_style(style = cell_fill(color = "lightpink"),
+  tab_style(style = cell_fill(color = "#D55E00"),
             locations = cells_body(
               columns = 4,
               rows = conditions_table_table[[4]] == "Below Normal")) %>%
