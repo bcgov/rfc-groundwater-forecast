@@ -88,7 +88,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                     #y= "OW492"
                     #y= "OW002"
                     #y= "OW406"
-                    #y= "OW459"
+                    #y= "OW452"
                     #y= "OW275"
                     #y= "OW255"
                     # y = Well_list[1]
@@ -1618,10 +1618,11 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
                       # Define custom color scale for performance categories
-                      performance_colors <- c('Good, forecast less sensitive to future weather' = '#00CC00',
-                                              'Good, forecast more sensitive to future weather' = "#99FF00",
-                                              'Fair, forecast less sensitive to future weather' = '#FF6600',
-                                              'Fair, forecast more sensitive to future weather' = '#FFCC33')
+                      performance_colors <- c('Good, forecast less sensitive to future weather' = '#000000',
+                                              'Good, forecast more sensitive to future weather' = "#555555",
+                                              'Fair, forecast less sensitive to future weather' = '#7B4F39',
+                                              'Fair, forecast more sensitive to future weather' = '#B68A6A')
+
 
                       gglayers <- list(
                         theme_bw(),
@@ -1654,8 +1655,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         geom_line(data = temp, aes(x = Date, y = Waterlevel_adjustments_temp - groundwater, colour = "Recorded GW Level"), linewidth = 1) +
                         scale_colour_manual(name = "", values = c("black")) +
                         new_scale_colour() +
-                        geom_crossbar(data = Time_series_data_2_plot, aes(x = Date_predicted, y = Waterlevel_adjustments_temp - predicted_value_50th, ymin = Waterlevel_adjustments_temp - predicted_value_25th, ymax = Waterlevel_adjustments_temp - predicted_value_75th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
-                        geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_5th, ymax = Waterlevel_adjustments_temp - predicted_value_95th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        geom_crossbar(data = Time_series_data_2_plot, aes(x = Date_predicted, y = Waterlevel_adjustments_temp - predicted_value_50th, ymin = Waterlevel_adjustments_temp - predicted_value_25th, ymax = Waterlevel_adjustments_temp - predicted_value_75th, colour = performance), alpha = 1, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_5th, ymax = Waterlevel_adjustments_temp - predicted_value_95th, colour = performance), alpha = 1, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
                         scale_colour_manual(name = "Performance", values = performance_colors) +
                         # new_scale_colour() +
                         #   geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_50th + ME, ymax = Waterlevel_adjustments_temp - predicted_value_50th - ME, colour = "Model Error"), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
@@ -1694,8 +1695,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                         geom_line(data = temp, aes(x = Date, y = Waterlevel_adjustments_temp - groundwater, colour = "Recorded GW Level"), linewidth = 1) +
                         scale_colour_manual(name = "", values = c("black")) +
                         new_scale_colour() +
-                        geom_crossbar(data = Time_series_data_2_plot, aes(x = Date_predicted, y = Waterlevel_adjustments_temp - predicted_value_50th, ymin = Waterlevel_adjustments_temp - predicted_value_25th, ymax = Waterlevel_adjustments_temp - predicted_value_75th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
-                        geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_5th, ymax = Waterlevel_adjustments_temp - predicted_value_95th, colour = performance), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        geom_crossbar(data = Time_series_data_2_plot, aes(x = Date_predicted, y = Waterlevel_adjustments_temp - predicted_value_50th, ymin = Waterlevel_adjustments_temp - predicted_value_25th, ymax = Waterlevel_adjustments_temp - predicted_value_75th, colour = performance), alpha = 1, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
+                        geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_5th, ymax = Waterlevel_adjustments_temp - predicted_value_95th, colour = performance), alpha = 1, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
                         scale_colour_manual(name = "Performance", values = performance_colors) +
                         # new_scale_colour() +
                         #   geom_errorbar(data = Time_series_data_2_plot, aes(x = Date_predicted, ymin = Waterlevel_adjustments_temp - predicted_value_50th + ME, ymax = Waterlevel_adjustments_temp - predicted_value_50th - ME, colour = "Model Error"), alpha = 0.5, linetype = 1, size = 0.5, width = 5, position = position_dodge(width = 10)) +
@@ -2442,6 +2443,14 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           tab_style(
                             style = cell_fill(color = "gray96"),
                             locations = cells_body(columns = 1:2)
+                          )
+
+                        table_gt <- table_gt %>%
+                          tab_source_note(
+                            source_note = md("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note: colour shading occurs when likelihood is >50% for that condition category")) %>%
+                          tab_style(
+                            style = cell_text(size = px(9)),   # adjust size here
+                            locations = cells_source_notes()
                           )
 
                         # Make the pdf plot and merge in legends

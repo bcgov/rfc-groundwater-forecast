@@ -33,7 +33,7 @@ library(gt)
 \end{center}
 
 \begin{center}
-\textbf{`r params$aquifer_type` Aquifer | Data since `r params$start_year`| Latest on `r format(params$latest_date, "%b-%d")` | Forecast issued: `r format(Sys.Date(), "%b-%d")`}
+\textbf{`r params$aquifer_type` Aquifer | Data since `r params$start_year`| Latest data `r format(params$latest_date, "%b-%d")` | Forecast issued: `r format(Sys.Date(), "%b-%d")`}
 \vspace{-1.5em}
 \end{center}
 
