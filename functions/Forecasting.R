@@ -1387,7 +1387,8 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
 
 
-                      } else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {      # SNOW INFLUENCED ----------------------------------------------------------
+                      } else if (unique(pgown_well_info_Well_info$Snow_influenced == 1)) {
+                        # SNOW INFLUENCED ----------------------------------------------------------
 
                         #climate graphs.
                         temp_historical_conditions <- temp %>%
@@ -1737,12 +1738,31 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                           { if ("deterministic" %in% rfc_forecast_include) geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "Deterministic Forecast"), linetype = 1, linewidth = 1) } +
                           # geom_line(data = deterministic_forecast_data_temp, aes(x = Date, y = Value, colour = "Deterministic Forecast"), linetype = 1, linewidth = 1) +
                           geom_line(data = ensemble_forecast_data_y_temp, aes(x = Date, y = Value, colour = "Ensemble Forecast", group = en_sim), linetype = 1, linewidth = 1) +
+                          geom_line(
+                            data = temp_WL_states_temp_plot,
+                            aes(x = Date, y = Waterlevel_adjustments_temp - per50th),
+                            linewidth = 0.5,
+                            alpha = 0.5,
+                            colour = "#808080"
+                          ) +
+                          geom_ribbon(
+                            data = temp_WL_states_temp_plot[1,],    # a single-row dummy
+                            aes(
+                              x = Date,
+                              ymin = 0,
+                              ymax = 0,
+                              fill = "Median line"
+                            ),
+                            alpha = 0,    # invisible layer
+                            linewidth = 0
+                          ) +
                           scale_colour_manual(
                             name = "Recorded Data",
                             values = c(
                               "Recorded GW Level/ Recorded Climate" = "black",
                               "Deterministic Forecast" = "red",
-                              "Ensemble Forecast" = "orange"
+                              "Ensemble Forecast" = "orange",
+                              "Median line" = "#808080"
                             )
                           ) +
 
@@ -1808,20 +1828,74 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       legend_plot_pdf_2 <- cowplot::get_legend(
                         ggplot() +
-                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per10th, ymin = Waterlevel_adjustments_temp - Min, fill = "0 - 10th  (Much Below Normal)"), size = 1) +
-                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per25th, ymin = Waterlevel_adjustments_temp - per10th, fill = "10 - 25th  (Below Normal)"), size = 1) +
-                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per75th, ymin = Waterlevel_adjustments_temp - per25th, fill = "25 - 75th  (Normal)"), size = 1) +
-                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - per90th, ymin = Waterlevel_adjustments_temp - per75th, fill = "75 - 90th  (Above Normal)"), size = 1) +
-                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5, aes(x = Date, ymax = Waterlevel_adjustments_temp - Max, ymin = Waterlevel_adjustments_temp - per90th, fill = "90 - 100th  (Much Above Normal)"), size = 1) +
-                          scale_fill_brewer(name = "Historic Percentiles", palette = "Spectral", direction = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5,
+                                      aes(x = Date,
+                                          ymax = Waterlevel_adjustments_temp - per10th,
+                                          ymin = Waterlevel_adjustments_temp - Min,
+                                          fill = "0 - 10th  (Much Below Normal)"),
+                                      size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5,
+                                      aes(x = Date,
+                                          ymax = Waterlevel_adjustments_temp - per25th,
+                                          ymin = Waterlevel_adjustments_temp - per10th,
+                                          fill = "10 - 25th  (Below Normal)"),
+                                      size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5,
+                                      aes(x = Date,
+                                          ymax = Waterlevel_adjustments_temp - per75th,
+                                          ymin = Waterlevel_adjustments_temp - per25th,
+                                          fill = "25 - 75th  (Normal)"),
+                                      size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5,
+                                      aes(x = Date,
+                                          ymax = Waterlevel_adjustments_temp - per90th,
+                                          ymin = Waterlevel_adjustments_temp - per75th,
+                                          fill = "75 - 90th  (Above Normal)"),
+                                      size = 1) +
+                          geom_ribbon(data = temp_WL_states_temp_plot, alpha = 0.5,
+                                      aes(x = Date,
+                                          ymax = Waterlevel_adjustments_temp - Max,
+                                          ymin = Waterlevel_adjustments_temp - per90th,
+                                          fill = "90 - 100th  (Much Above Normal)"),
+                                      size = 1) +
+
+                          # ---- MEDIAN LINE ----
+                        geom_line(
+                          data = temp_WL_states_temp_plot,
+                          aes(x = Date,
+                              y = Waterlevel_adjustments_temp - per50th,
+                              colour = "50th (Median)"),
+                          linewidth = 0.6
+                        ) +
+
+                          # ---- SAME LEGEND TITLE, DIFFERENT SCALES ----
+                        # Fill scale (first in ordering)
+                        scale_fill_brewer(
+                          name = "Historic Percentiles",
+                          palette = "Spectral",
+                          direction = 1,
+                          guide = guide_legend(order = 1)
+                        ) +
+
+                          # Colour scale (second in ordering)
+                          scale_colour_manual(
+                            name = NULL,
+                            values = c("50th (Median)" = "#808080"),
+                            guide = guide_legend(order = 2)     # <-- puts Median BELOW fills
+                          ) +
+
                           theme(
                             legend.position = "right",
                             legend.key.size = unit(0.5, "lines"),
                             legend.box = "vertical",
-                            legend.title = element_text(size = 9)#,
-                            #text = element_text(family = "BCSans")
+                            legend.title = element_text(size = 9),
+                            legend.key = element_rect(fill = NA, colour = NA),
+                            legend.spacing.y = unit(-0.5, "lines"),
+                            legend.background = element_rect(fill = NA, colour = NA)  # remove legend box background
                           )
                       )
+
+
                       # plot(legend_plot_pdf_2)
 
                       legend_plot_pdf_3 <- cowplot::get_legend(
