@@ -444,7 +444,7 @@ gw_map
 
 
 
-map_title_text <- paste0("<b><u>RFC: Groundwater Level Drought Forecast</u></b>")
+map_title_text <- paste0("<b><u>RFC: GLOSS Groundwater Level Forecast</u></b>")
 
 map_title_text_body <- paste0("**This project is under development.** Forecast of groundwater levels being below normal
 for the next 14, 30, 60, and 90 days compared to historical conditions. Click the layer
@@ -498,7 +498,7 @@ info.box <- HTML(paste0(
 
   #  Body
   HTML(
-    paste0("This groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning,
+    paste0("The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning,
     to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times,
     capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of
     groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th
@@ -506,7 +506,7 @@ info.box <- HTML(paste0(
     records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability
     or other issues arise.
                    <br><br>
-               Model Links:<br>
+               GLOSS Model Links:<br>
               <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
                | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >Explanation of forecast chart</a></u>
                | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Technical reference </a></u>
