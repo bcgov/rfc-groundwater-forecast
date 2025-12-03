@@ -174,12 +174,12 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
+                              # "<br>", Static_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_30d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -199,12 +199,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_60d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -224,12 +223,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_90d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -249,12 +247,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood,
                      values = vals_likelihood,
@@ -315,12 +312,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood_conditions,
                      values = vals_likelihood_conditions,
@@ -349,12 +345,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood_conditions,
                      values = vals_likelihood_conditions,
@@ -383,12 +378,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood_conditions,
                      values = vals_likelihood_conditions,
@@ -417,12 +411,11 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br><b>Forecast Performance</b>: ", Forecast_Performance,
                               "<br>",
                               "<br>", Forecast_URL,
-                              "<br>", Technical_Forecast_URL,
+                              # "<br>", Technical_Forecast_URL,
                               "<br>", Realtime_URL,
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL,
-                              "<br>", Static_Hydrograph_URL)) %>%
+                              "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addLegend("bottomleft",
                      pal = pal_likelihood_conditions,
                      values = vals_likelihood_conditions,
