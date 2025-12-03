@@ -1619,7 +1619,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
 
                       # Define custom color scale for performance categories
                       performance_colors <- c('Good, forecast less sensitive to future weather' = '#000000',
-                                              'Good, forecast more sensitive to future weather' = "#555555",
+                                              'Good, forecast more sensitive to future weather' = "#808080",
                                               'Fair, forecast less sensitive to future weather' = '#7B4F39',
                                               'Fair, forecast more sensitive to future weather' = '#B68A6A')
 
