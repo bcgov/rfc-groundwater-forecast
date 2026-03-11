@@ -95,9 +95,9 @@ pkgs_github <- c('weathercan',
                  'bcsnowdata')
 new.packages_github <- pkgs_github[!(pkgs_github %in% installed.packages()[,"Package"])]
 
-if ('weathercan' %in% new.packages_github) {
+# if ('weathercan' %in% new.packages_github) {
   pak::pak("ropensci/weathercan", lib = Sys.getenv("R_LIBS_USER"))
-}
+# }
 if ('bcsnowdata' %in% new.packages_github) {
   pak::pak("bcgov/bcsnowdata", lib = Sys.getenv("R_LIBS_USER"))
 }
