@@ -1,5 +1,5 @@
 ---
-title: "GLOSS Groundwater Level Forecast Report"
+title: "GLOSS - Groundwater Level Forecast Report"
 output: 
   html_document:
     self-contained: true
@@ -18,36 +18,94 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = TRUE, out.width = '
 
 
 <style>
+
+
+h1.title {
+background-color: rgb(35, 64, 117);
+color: white;
+
+padding: 20px 120px 20px 20px;  /* more vertical + right space */
+margin: -10px -10px 20px -10px;
+border-bottom: 4px solid rgb(227, 168, 43);
+
+font-size: 30px;
+font-weight: 600;
+
+position: relative;
+line-height: 1.2;
+min-height: 70px;   /* ✅ ensures banner is tall enough */
+}
+
+/* Logo */
+h1.title::after {
+content: "";
+position: absolute;
+
+top: 60%;
+right: -50px;
+transform: translateY(-50%);  /* ✅ vertical centering */
+
+height: 45px;                 /* adjust as needed */
+width: 120px;
+
+background-image: url("BCID_V_RGB_rev.png");
+background-size: contain;
+background-repeat: no-repeat;
+}
+
+
 @font-face {
-  font-family: 'BCSans';
-  src: url('fonts/BCSans-Regular.otf') format('opentype');
+font-family: 'BCSans';
+src: url('fonts/BCSans-Regular.otf') format('opentype');
 }
 
 body {
-  font-family: 'BCSans', sans-serif;
+font-family: 'BCSans', sans-serif;
 }
+
+
+.tabset .nav {
+  display: flex !important;
+  justify-content: center !important;  /* centers tabs horizontally */
+  margin-bottom: 20px;
+  gap: 10px;  /* optional spacing between tabs */
+}
+
+.tabset .nav > li {
+  float: none !important;      /* critical: overrides Bootstrap */
+  display: inline-block;
+}
+
+.tabset .nav-pills > li > a {
+  border-radius: 20px;
+  padding: 8px 16px;
+}
+
+.container {
+  max-width: 1000px;
+}
+
 </style>
 
 
-``` {r}
-# <div style="
-# background-color: rgb(35, 64, 117); 
-# padding: 10px; 
-# text-align: left;
-# border-bottom: 4px solid rgb(227, 168, 43)
-# ">
-#   <h2 style="color: white; margin: 0;">Groundwater Level Drought Forecast</h1>
-# </div>
-```
 
 ##### Forecast issued by the BC River Forecast Centre on `r format(params$forecast_date, "%B %d, %Y")`.
 
 ---
 
-The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
+The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. 
 
-GLOSS Model Links:<br>
-<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
+Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. 
+
+The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
+
+Two tabbed forecast views are provided:
+
+1. **Likelihood of Below Normal Conditions** highlights the probability that groundwater levels will fall below normal, supporting drought-focused assessment and early risk identification.
+2. **Likely Conditions (All Categories)** shows the most likely groundwater condition (below, near, or above normal), providing an overall summary of expected groundwater status.
+
+
+**GLOSS Model Links**: <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
 | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >Explanation of forecast chart</a></u>
 | <u><a href=https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/drought-flooding-dikes-dams/river-forecast-centre target='_blank' >Technical references </a></u>
 | <u><a href=https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=9f97b3e9e3754ea6b769efe0bbdf3acb target='_blank' >Forecast Map</a></u> | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
@@ -57,13 +115,16 @@ GLOSS Model Links:<br>
 
 <div style="text-align: center;">
 
-## Groundwater Level Forecast
+## Groundwater Level Conditions Forecast
 
 </div>
 
-### {.tabset}
+
+
+### {.tabset .tabset-pills}
 
 #### Likelihood of Below Normal Conditions
+
 
 <h3 style="text-align: center;">Groundwater Levels Forecast: Below Normal Conditions</h3>
 <h5 style="text-align: center;">
@@ -79,11 +140,16 @@ params$map
 ```{r table, results = "asis", warning=FALSE}
 params$table %>%
   tab_options(
-    table.font.names = "BCSans"
+
+  table.font.names = "BCSans",
+  table.font.size = px(13),
+  data_row.padding = px(6),
+  column_labels.font.weight = "bold"
   )
 ```
 
-#### Likely Conditions All Categories
+#### Likely Conditions (All Categories)
+
 
 <h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions</h3>
 <h5 style="text-align: center;">
