@@ -2365,7 +2365,7 @@ forecast_model <- function(Time_series_data, forecast_days, num_cores,
                                  Percentiles = case_when(category == prob_cats[1] ~ "Above 75th",
                                                          category == prob_cats[2] ~ "25th to 75th",
                                                          category == prob_cats[3] ~ "Below 25th")) %>%
-                          select("Groundwater Level Conditions" = category, "Percentile Range" = Percentiles, latest, everything())
+                          select("Groundwater Level Conditions" = category, "Condition Percentile Range" = Percentiles, latest, everything())
                         names(table_for_gt)[names(table_for_gt) == "latest"] <- paste0("Latest ", latest_value_table[2,])
 
 

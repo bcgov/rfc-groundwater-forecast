@@ -557,16 +557,16 @@ leaflet.extras::addBootstrapDependency() %>% # Add Bootstrap to be able to use a
 gw_map
 
 htmlwidgets::saveWidget(widget = gw_map,
-                        file = paste0(output_path, "/Groundwater_Drought_Forecast_Map.html"),
+                        file = paste0(output_path, "/Groundwater_Level_Forecast_Map.html"),
                         selfcontained = TRUE,
-                        title = "B.C. Groundwater Drought Forecast")
+                        title = "B.C. Groundwater Level Forecast")
 htmlwidgets::saveWidget(widget = gw_map,
-                        file = paste0("output/Groundwater_Drought_Forecast_Map.html"),
+                        file = paste0("output/Groundwater_Level_Forecast_Map.html"),
                         selfcontained = TRUE,
-                        title = "B.C. Groundwater Drought Forecast")
+                        title = "B.C. Groundwater Level Forecast")
 
 # remove building files
-unlink(paste0(output_path, "/Groundwater_Drought_Forecast_Map_files"), recursive = TRUE)
-unlink(paste0("output/Groundwater_Drought_Forecast_Map_files"), recursive = TRUE)
+unlink(paste0(output_path, "/Groundwater_Level_Forecast_Map_files"), recursive = TRUE)
+unlink(paste0("output/Groundwater_Level_Forecast_Map_files"), recursive = TRUE)
 
 

@@ -1,5 +1,5 @@
 ---
-title: "GLOSS - Groundwater Level Forecast Report"
+title: "GLOSS - Groundwater Level Forecast Model Report"
 output: 
   html_document:
     self-contained: true
@@ -93,9 +93,9 @@ font-family: 'BCSans', sans-serif;
 
 ---
 
-The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. 
+The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data.
 
-Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. 
+Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. For more details on the model and forecasts see the <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >model overview</a> and <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >explanation of forecast chart</a>.
 
 The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
 
@@ -126,7 +126,7 @@ Two tabbed forecast views are provided:
 #### Likelihood of Below Normal Conditions
 
 
-<h3 style="text-align: center;">Groundwater Levels Forecast: Below Normal Conditions</h3>
+<h3 style="text-align: center;">Groundwater Levels Forecast: Likelihood of Below Normal Conditions</h3>
 <h5 style="text-align: center;">
 Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 </h5>
@@ -136,6 +136,8 @@ Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 # report options
 params$map
 ```
+
+<h3 style="text-align: center;">Likelihood of Below Normal Groundwater Level Conditions</h3>
 
 ```{r table, results = "asis", warning=FALSE}
 params$table %>%
@@ -151,7 +153,7 @@ params$table %>%
 #### Likely Conditions (All Categories)
 
 
-<h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions</h3>
+<h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions </h3>
 <h5 style="text-align: center;">
 Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 </h5>
@@ -160,6 +162,9 @@ Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 # report options
 params$map2
 ```
+
+<h3 style="text-align: center;">Likely Groundwater Level Conditions</h3>
+
 
 ```{r table2, results = "asis", warning=FALSE}
 params$table2 %>%
