@@ -14,7 +14,7 @@ capturing how groundwater responds to hydroclimate data. Forecasts provide a ran
 and are presented as likelihoods of groundwater being above, below, or near normal. More information can be found in the [Forecast Model Overview](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf).
 
 Results of the GLOSS forecast model can be found on the Groundwater Level Forecast [Map](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Map.html) 
-and [Report](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Drought_Forecast_Report.html). 
+and [Report](https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Report.html). 
 
 
 ### Project Status

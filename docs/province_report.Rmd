@@ -1,11 +1,12 @@
 ---
-title: "Groundwater Level Drought Forecast"
+title: "GLOSS Groundwater Level Forecast Report"
 output: 
   html_document:
     self-contained: true
 params:
   forecast_date: NULL
   map: NULL
+  map2: NULL
   table: NULL
   table2: NULL
 ---
@@ -54,6 +55,15 @@ GLOSS Model Links:<br>
 
 ---
 
+<div style="text-align: center;">
+
+## Groundwater Level Forecast
+
+</div>
+
+### {.tabset}
+
+#### Likelihood of Below Normal Conditions
 
 <h3 style="text-align: center;">Groundwater Levels Forecast: Below Normal Conditions</h3>
 <h5 style="text-align: center;">
@@ -73,10 +83,17 @@ params$table %>%
   )
 ```
 
+#### Likely Conditions All Categories
+
 <h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions</h3>
 <h5 style="text-align: center;">
 Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
 </h5>
+
+```{r map2, echo=FALSE}
+# report options
+params$map2
+```
 
 ```{r table2, results = "asis", warning=FALSE}
 params$table2 %>%

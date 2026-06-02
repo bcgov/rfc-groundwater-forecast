@@ -145,8 +145,8 @@ bc_bound_line <- readRDS(file = "data/spatial/bcmaps_bcbound_line.rds")
 
 # Map the data
 
-gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl = FALSE,
-                                                             zoomSnap = 0.5)) %>%
+gw_map_base <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl = FALSE,
+                                                                  zoomSnap = 0.5)) %>%
   leaflet::addTiles(group = "OpenStreetMap") %>%
   leaflet::addProviderTiles(leaflet::providers$Esri.NatGeoWorldMap, group = "NatGeoWorldMap (ESRI)") %>%
   leaflet::addProviderTiles(leaflet::providers$Esri.WorldImagery, group = "WorldImagery (ESRI)") %>%
@@ -440,7 +440,9 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                                     "<br>Level Conditions",
                                     "<br>in 90 days (", format(as.Date(date_90d), "%b %d"),")",
                                     "<br><br>Likely Conditions") ,
-                     group = "Likely Conditions - 90 days") %>%
+                     group = "Likely Conditions - 90 days")
+
+gw_map <- gw_map_base %>%
   leaflet::addLayersControl(baseGroups = c("Topographic (ESRI)", "OpenStreetMap",
                                            "NatGeoWorldMap (ESRI)", "WorldImagery (ESRI)",
                                            "Positron (CartoDB)"),
@@ -456,7 +458,25 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                                "Likely Conditions - 30 days",
                                "Likely Conditions - 60 days",
                                "Likely Conditions - 90 days"))
-gw_map
+
+gw_map2 <- gw_map_base %>%
+  leaflet::addLayersControl(baseGroups = c("Topographic (ESRI)", "OpenStreetMap",
+                                           "NatGeoWorldMap (ESRI)", "WorldImagery (ESRI)",
+                                           "Positron (CartoDB)"),
+                            overlayGroups = c("Likely Conditions - 14 days",
+                                              "Likely Conditions - 30 days",
+                                              "Likely Conditions - 60 days",
+                                              "Likely Conditions - 90 days",
+                                              "Below Normal - 14 days","Below Normal - 30 days",
+                                              "Below Normal - 60 days","Below Normal - 90 days"),
+                            options = leaflet::layersControlOptions(collapsed = TRUE))  %>%
+  leaflet::hideGroup(group = c("Likely Conditions - 30 days",
+                               "Likely Conditions - 60 days",
+                               "Likely Conditions - 90 days",
+                               "Below Normal - 14 days",
+                               "Below Normal - 30 days",
+                               "Below Normal - 60 days",
+                               "Below Normal - 90 days"))
 
 
 
@@ -484,15 +504,15 @@ names(data_table_table)[names(data_table_table)=="Latest"] <- paste0("Latest (",
 
 
 gw_table <- gt(data_table_table %>%
-  group_by(Region)) %>%
+                 group_by(Region)) %>%
   cols_align(align = "left",
-    columns = 3) %>%
+             columns = 3) %>%
   cols_align(align = "center",
              columns = 4:7) %>%
   tab_style(style = cell_fill(color = "lightgreen"),
-    locations = cells_body(
-      columns = 4,
-      rows = data_table_table[[4]] == "Normal")) %>%
+            locations = cells_body(
+              columns = 4,
+              rows = data_table_table[[4]] == "Normal")) %>%
   tab_style(style = cell_fill(color = "lightblue"),
             locations = cells_body(
               columns = 4,
@@ -565,7 +585,7 @@ names(conditions_table_table)[names(conditions_table_table)=="Latest"] <- paste0
 # mapping prep
 
 gw_conditions_table <- gt(conditions_table_table %>%
-                 group_by(Region)) %>%
+                            group_by(Region)) %>%
   cols_align(align = "left",
              columns = 3) %>%
   cols_align(align = "center",
@@ -620,19 +640,21 @@ for (i in 5:8) {
 
 # render report
 rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
-                  output_file = "Groundwater_Drought_Forecast_Report.html",
+                  output_file = "Groundwater_Level_Forecast_Report.html",
                   output_dir = normalizePath("output/"),
                   params = list("forecast_date" = forecast_date,
                                 "map" = gw_map,
+                                "map2" = gw_map2,
                                 "table" = gw_table,
                                 "table2" = gw_conditions_table))
 
 # render archived report
 rmarkdown::render(input = normalizePath("docs/province_report.Rmd"),
-                  output_file = "Groundwater_Drought_Forecast_Report.html",
+                  output_file = "Groundwater_Level_Forecast_Report.html",
                   output_dir = normalizePath(paste0(output_path, "/")),
                   params = list("forecast_date" = forecast_date,
                                 "map" = gw_map,
+                                "map2" = gw_map2,
                                 "table" = gw_table,
                                 "table2" = gw_conditions_table))
 
