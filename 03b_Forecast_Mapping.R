@@ -139,6 +139,21 @@ pal_likelihood_conditions <- colorFactor(palette = cols_likelihood_conditions,
 
 bc_bound_line <- readRDS(file = "data/spatial/bcmaps_bcbound_line.rds")
 
+well_aquifers <- well_likely_conditions_map %>%
+  dplyr::filter(!is.na(Latest_Conditions)) %>%
+  dplyr::select(Well, Aquifer_ID, Aquifer_Subtype, Aquifer_URL) %>%
+  unique() %>%
+  st_drop_geometry()
+
+aquifer_list <- well_aquifers %>%
+  dplyr::pull(Aquifer_ID) %>%
+  unique()
+
+aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
+  dplyr::filter(AQUIFER_ID %in% aquifer_list) %>%
+  dplyr::rename(Aquifer_ID = AQUIFER_ID)  %>%
+  dplyr::left_join(well_aquifers, by = "Aquifer_ID")
+
 # Map the data
 
 gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl = FALSE,
@@ -179,31 +194,51 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
                               "<br>", Interactive_Hydrograph_URL)) %>%
-                              # "<br>", Static_Hydrograph_URL)) %>%
-  leaflet::addCircleMarkers(data = forecast_30d %>% filter(Conditions == "Below Normal"),
-                            fillOpacity = 100, color = "black", radius = 6, weight = 1,
-                            fillColor = ~pal_likelihood(Likelihood_Category),
-                            group = "Below Normal - 30 days",
-                            options = leaflet::pathOptions(pane = "points"),
-                            label = ~paste0(Well, " (", Location, ") - ", "Likelihood Below Normal: ", Likelihood_Label, "%"),
-                            popup = ~paste0(
-                              "<b>", Well, " - ", Location ,"</b>",
-                              "<br><b>Aquifer ID:</b> ", Aquifer_ID,
-                              "<br><b>Aquifer Subtype:</b> ", Aquifer_Subtype,
-                              "<br><br><b><u>Latest</b></u>",
-                              "<br><b>Latest Date</b>: ", format(Latest_Date, "%b-%d"),
-                              "<br><b>Latest Conditions</b>: ", Latest_Conditions,
-                              "<br><br><b><u>30-Day Forecast</b></u>",
-                              "<br><b>Predicted Date</b>: ", format(Predicted_Date, "%b-%d"),
-                              "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
-                              "<br><b>Forecast Performance</b>: ", Forecast_Performance,
+  # "<br>", Static_Hydrograph_URL)) %>%
+  addPolygons(data = aquifers,
+              color = "#756bb1",
+              weight = 2,
+
+              fillColor = "#AAA7AD",
+              fillOpacity = 0.5,
+
+              highlightOptions = highlightOptions(color = 'black', weight = 3,
+                                                  bringToFront = FALSE),
+              group = "Aquifers",
+              options = pathOptions(pane = "polygons"),
+              label = ~paste0("Aquifer ID: ", Aquifer_ID),
+              popup = ~paste0("<b>Aquifer ID: ", Aquifer_ID,
+                              "</b><br>",
+                              "<br><b>Location</b>: ", LOCATION,
+                              "<br><b>Aquifer Subtype</b>: ", Aquifer_Subtype,
+                              "<br><b>Observation Well</b>: ", Well,
                               "<br>",
-                              "<br>", Forecast_URL,
-                              # "<br>", Technical_Forecast_URL,
-                              "<br>", Realtime_URL,
-                              "<br>", Well_URL,
-                              "<br>", Aquifer_URL,
-                              "<br>", Interactive_Hydrograph_URL)) %>%
+                              "<br>", Aquifer_URL)
+  ) %>%
+leaflet::addCircleMarkers(data = forecast_30d %>% filter(Conditions == "Below Normal"),
+                          fillOpacity = 100, color = "black", radius = 6, weight = 1,
+                          fillColor = ~pal_likelihood(Likelihood_Category),
+                          group = "Below Normal - 30 days",
+                          options = leaflet::pathOptions(pane = "points"),
+                          label = ~paste0(Well, " (", Location, ") - ", "Likelihood Below Normal: ", Likelihood_Label, "%"),
+                          popup = ~paste0(
+                            "<b>", Well, " - ", Location ,"</b>",
+                            "<br><b>Aquifer ID:</b> ", Aquifer_ID,
+                            "<br><b>Aquifer Subtype:</b> ", Aquifer_Subtype,
+                            "<br><br><b><u>Latest</b></u>",
+                            "<br><b>Latest Date</b>: ", format(Latest_Date, "%b-%d"),
+                            "<br><b>Latest Conditions</b>: ", Latest_Conditions,
+                            "<br><br><b><u>30-Day Forecast</b></u>",
+                            "<br><b>Predicted Date</b>: ", format(Predicted_Date, "%b-%d"),
+                            "<br><b>Likelihood of Below Normal Conditions</b>: ", Likelihood_Label, "%",
+                            "<br><b>Forecast Performance</b>: ", Forecast_Performance,
+                            "<br>",
+                            "<br>", Forecast_URL,
+                            # "<br>", Technical_Forecast_URL,
+                            "<br>", Realtime_URL,
+                            "<br>", Well_URL,
+                            "<br>", Aquifer_URL,
+                            "<br>", Interactive_Hydrograph_URL)) %>%
   leaflet::addCircleMarkers(data = forecast_60d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -433,23 +468,24 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                                               "Likely Conditions - 14 days",
                                               "Likely Conditions - 30 days",
                                               "Likely Conditions - 60 days",
-                                              "Likely Conditions - 90 days"),
+                                              "Likely Conditions - 90 days",
+                                              "Aquifers"),
                             options = leaflet::layersControlOptions(collapsed = TRUE))  %>%
   leaflet::hideGroup(group = c("Below Normal - 30 days", "Below Normal - 60 days","Below Normal - 90 days",
                                "Likely Conditions - 14 days",
                                "Likely Conditions - 30 days",
                                "Likely Conditions - 60 days",
                                "Likely Conditions - 90 days"))
-gw_map
+# gw_map
 
 
 
-map_title_text <- paste0("<b><u>RFC: GLOSS Groundwater Level Forecast</u></b>")
+map_title_text <- paste0("<b><u>GLOSS - Groundwater Level Forecast Model Map</u></b>")
 
-map_title_text_body <- paste0("**This project is under development.** Forecast of groundwater levels being below normal
+map_title_text_body <- paste0("Forecast of groundwater levels conditions
 for the next 14, 30, 60, and 90 days compared to historical conditions. Click the layer
 box on the top right for more forecast days and the info box on the top left for more information.
-Updated: <b>", format(Sys.time(), format = "%H:%M %a. %b. %d, %Y"), "</b>.")
+Forecast issued by the BC River Forecast Centre on <b>", format(Sys.time(), format = "%b. %d, %Y"), "</b>.")
 
 
 headerCSS <- "
@@ -490,7 +526,7 @@ info.box <- HTML(paste0(
 
   # Header / Title
   HTML(
-    paste0("<b>RFC: Groundwater Level Conditions Forecast</b>")
+    paste0("<b>GLOSS - Groundwater Level Forecast Model</b>")
   ),
   HTML(
     '</div><div class="modal-body">'
