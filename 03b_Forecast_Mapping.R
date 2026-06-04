@@ -139,20 +139,20 @@ pal_likelihood_conditions <- colorFactor(palette = cols_likelihood_conditions,
 
 bc_bound_line <- readRDS(file = "data/spatial/bcmaps_bcbound_line.rds")
 
-well_aquifers <- well_likely_conditions_map %>%
-  dplyr::filter(!is.na(Latest_Conditions)) %>%
-  dplyr::select(Well, Aquifer_ID, Aquifer_Subtype, Aquifer_URL) %>%
-  unique() %>%
-  st_drop_geometry()
-
-aquifer_list <- well_aquifers %>%
-  dplyr::pull(Aquifer_ID) %>%
-  unique()
-
-aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
-  dplyr::filter(AQUIFER_ID %in% aquifer_list) %>%
-  dplyr::rename(Aquifer_ID = AQUIFER_ID)  %>%
-  dplyr::left_join(well_aquifers, by = "Aquifer_ID")
+# well_aquifers <- well_likely_conditions_map %>%
+#   dplyr::filter(!is.na(Latest_Conditions)) %>%
+#   dplyr::select(Well, Aquifer_ID, Aquifer_Subtype, Aquifer_URL) %>%
+#   unique() %>%
+#   st_drop_geometry()
+#
+# aquifer_list <- well_aquifers %>%
+#   dplyr::pull(Aquifer_ID) %>%
+#   unique()
+#
+# aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
+#   dplyr::filter(AQUIFER_ID %in% aquifer_list) %>%
+#   dplyr::rename(Aquifer_ID = AQUIFER_ID)  %>%
+#   dplyr::left_join(well_aquifers, by = "Aquifer_ID")
 
 # Map the data
 
@@ -194,27 +194,27 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
                               "<br>", Well_URL,
                               "<br>", Aquifer_URL,
                               "<br>", Interactive_Hydrograph_URL)) %>%
-  # "<br>", Static_Hydrograph_URL)) %>%
-  addPolygons(data = aquifers,
-              color = "#756bb1",
-              weight = 2,
-
-              fillColor = "#AAA7AD",
-              fillOpacity = 0.5,
-
-              highlightOptions = highlightOptions(color = 'black', weight = 3,
-                                                  bringToFront = FALSE),
-              group = "Aquifers",
-              options = pathOptions(pane = "polygons"),
-              label = ~paste0("Aquifer ID: ", Aquifer_ID),
-              popup = ~paste0("<b>Aquifer ID: ", Aquifer_ID,
-                              "</b><br>",
-                              "<br><b>Location</b>: ", LOCATION,
-                              "<br><b>Aquifer Subtype</b>: ", Aquifer_Subtype,
-                              "<br><b>Observation Well</b>: ", Well,
-                              "<br>",
-                              "<br>", Aquifer_URL)
-  ) %>%
+  # # "<br>", Static_Hydrograph_URL)) %>%
+  # addPolygons(data = aquifers,
+  #             color = "#756bb1",
+  #             weight = 2,
+  #
+  #             fillColor = "#AAA7AD",
+  #             fillOpacity = 0.5,
+  #
+  #             highlightOptions = highlightOptions(color = 'black', weight = 3,
+  #                                                 bringToFront = FALSE),
+  #             group = "Aquifers",
+  #             options = pathOptions(pane = "polygons"),
+  #             label = ~paste0("Aquifer ID: ", Aquifer_ID),
+  #             popup = ~paste0("<b>Aquifer ID: ", Aquifer_ID,
+  #                             "</b><br>",
+  #                             "<br><b>Location</b>: ", LOCATION,
+  #                             "<br><b>Aquifer Subtype</b>: ", Aquifer_Subtype,
+  #                             "<br><b>Observation Well</b>: ", Well,
+  #                             "<br>",
+  #                             "<br>", Aquifer_URL)
+  # ) %>%
 leaflet::addCircleMarkers(data = forecast_30d %>% filter(Conditions == "Below Normal"),
                           fillOpacity = 100, color = "black", radius = 6, weight = 1,
                           fillColor = ~pal_likelihood(Likelihood_Category),
