@@ -159,11 +159,14 @@ aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
     geometry = st_union(geometry),
     .groups = "drop"
   ) %>%
-  dplyr::select(Aquifer_ID, Model_Wells, Aquifer_URL)
+  dplyr::select(Aquifer_ID, Model_Wells, Aquifer_URL, LOCATION)
 
 
 aquifers_save <- aquifers %>%
-  mutate(Aquifer_URL = sub(".*href\\s*=\\s*['\"]([^'\"]+)['\"].*", "\\1", Aquifer_URL))
+  dplyr::select(Aquifer_ID, Model_Wells, Aquifer_URL) %>%
+  dplyr::mutate(Aquifer_URL = sub(".*href\\s*=\\s*['\"]([^'\"]+)['\"].*", "\\1", Aquifer_URL))
+st_write(aquifers_save, paste0(output_path, "RFC_GW_Forecast_Aquifers.geojson"), delete_dsn = TRUE)
+st_write(aquifers_save, paste0("output/RFC_GW_Forecast_Aquifers.geojson"), delete_dsn = TRUE)
 
 # Map the data
 
@@ -218,7 +221,7 @@ gw_map <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl 
               group = "Well Aquifers",
               options = pathOptions(pane = "polygons"),
               label = ~paste0("<b>Aquifer ID</b>: ", Aquifer_ID,
-                              "<br><b>Observation Well</b>: ", Well) %>%
+                              "<br><b>Observation Well</b>: ", Model_Wells) %>%
                 lapply(htmltools::HTML),
               popup = ~paste0("<b>Aquifer ID: ", Aquifer_ID,
                               "</b><br>",
