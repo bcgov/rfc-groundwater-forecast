@@ -165,7 +165,7 @@ aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
 aquifers_save <- aquifers %>%
   dplyr::select(Aquifer_ID, Model_Wells, Aquifer_URL) %>%
   dplyr::mutate(Aquifer_URL = sub(".*href\\s*=\\s*['\"]([^'\"]+)['\"].*", "\\1", Aquifer_URL))
-st_write(aquifers_save, paste0(output_path, "RFC_GW_Forecast_Aquifers.geojson"), delete_dsn = TRUE)
+st_write(aquifers_save, paste0(output_path, "/RFC_GW_Forecast_Aquifers.geojson"), delete_dsn = TRUE)
 st_write(aquifers_save, paste0("output/RFC_GW_Forecast_Aquifers.geojson"), delete_dsn = TRUE)
 
 # Map the data
