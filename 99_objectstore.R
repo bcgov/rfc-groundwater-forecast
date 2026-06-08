@@ -89,6 +89,16 @@ for (file_path in all_files) {
                ),
                acl = "public-read")
 
+  } else if (file_ext %in% c("geojson", "json")) {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket,
+               region = region,
+               headers = list(
+                 `Content-Type` = "application/geo+json",
+                 `Content-Disposition` = "inline"
+               ),
+               acl = "public-read")
   } else {
     put_object(file = file_path,
                object = relative_key,
@@ -153,6 +163,16 @@ for (file_path in all_files) {
                ),
                acl = "public-read")
 
+  } else if (file_ext %in% c("geojson", "json")) {
+    put_object(file = file_path,
+               object = relative_key,
+               bucket = bucket_date,
+               region = region,
+               headers = list(
+                 `Content-Type` = "application/geo+json",
+                 `Content-Disposition` = "inline"
+               ),
+               acl = "public-read")
   } else {
     put_object(file = file_path,
                object = relative_key,

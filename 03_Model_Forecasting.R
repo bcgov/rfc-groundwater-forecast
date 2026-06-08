@@ -55,7 +55,7 @@ Regional_group_list <- pgown_well_info_all %>%
   dplyr::pull(Regional_group)
 Regional_group_list <- as.list(Regional_group_list)
 
-# Regional_group_list <- Regional_group_list[6]
+Regional_group_list <- Regional_group_list[6]
 
 for (i in Regional_group_list) {
 
