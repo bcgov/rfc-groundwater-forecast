@@ -143,6 +143,28 @@ pal_likelihood_conditions <- colorFactor(palette = cols_likelihood_conditions,
 
 bc_bound_line <- readRDS(file = "data/spatial/bcmaps_bcbound_line.rds")
 
+well_aquifers <- well_likely_conditions_map %>%
+  dplyr::filter(!is.na(Latest_Conditions)) %>%
+  dplyr::select(Well, Aquifer_ID, Aquifer_Subtype, Aquifer_URL) %>%
+  unique() %>%
+  st_drop_geometry()
+
+aquifer_list <- well_aquifers %>%
+  dplyr::pull(Aquifer_ID) %>%
+  unique()
+
+aquifers <- readRDS("data/spatial/bc_aquifers.rds") %>%
+  dplyr::filter(AQUIFER_ID %in% aquifer_list) %>%
+  dplyr::rename(Aquifer_ID = AQUIFER_ID)  %>%
+  dplyr::left_join(well_aquifers, by = "Aquifer_ID") %>%
+  group_by(Aquifer_ID, LOCATION, Aquifer_URL) %>%
+  summarise(
+    Model_Wells = paste(unique(Well), collapse = ", "),
+    geometry = st_union(geometry),
+    .groups = "drop"
+  ) %>%
+  dplyr::select(Aquifer_ID, Model_Wells, Aquifer_URL, LOCATION)
+
 # Map the data
 
 gw_map_base <- leaflet::leaflet(options = leaflet::leafletOptions(attributionControl = FALSE,
@@ -159,6 +181,27 @@ gw_map_base <- leaflet::leaflet(options = leaflet::leafletOptions(attributionCon
                color = "black", weight = 1,
                group = "Province",
                options = pathOptions(pane = "bc")) %>%
+  addPolygons(data = aquifers,
+              color = "#756bb1",
+              weight = 2,
+
+              fillColor = "#AAA7AD",
+              fillOpacity = 0.5,
+
+              highlightOptions = highlightOptions(color = 'black', weight = 3,
+                                                  bringToFront = FALSE),
+              group = "Well Aquifers",
+              options = pathOptions(pane = "polygons"),
+              label = ~paste0("<b>Aquifer ID</b>: ", Aquifer_ID,
+                              "<br><b>Observation Well</b>: ", Model_Wells) %>%
+                lapply(htmltools::HTML),
+              popup = ~paste0("<b>Aquifer ID: ", Aquifer_ID,
+                              "</b><br>",
+                              "<br><b>Location</b>: ", LOCATION,
+                              "<br><b>Observation Well</b>: ", Model_Wells,
+                              "<br>",
+                              "<br>", Aquifer_URL)
+  ) %>%
   leaflet::addCircleMarkers(data = forecast_14d %>% filter(Conditions == "Below Normal"),
                             fillOpacity = 100, color = "black", radius = 6, weight = 1,
                             fillColor = ~pal_likelihood(Likelihood_Category),
@@ -451,13 +494,15 @@ gw_map <- gw_map_base %>%
                                               "Likely Conditions - 14 days",
                                               "Likely Conditions - 30 days",
                                               "Likely Conditions - 60 days",
-                                              "Likely Conditions - 90 days"),
+                                              "Likely Conditions - 90 days",
+                                              "Well Aquifers"),
                             options = leaflet::layersControlOptions(collapsed = TRUE))  %>%
   leaflet::hideGroup(group = c("Below Normal - 30 days", "Below Normal - 60 days","Below Normal - 90 days",
                                "Likely Conditions - 14 days",
                                "Likely Conditions - 30 days",
                                "Likely Conditions - 60 days",
-                               "Likely Conditions - 90 days"))
+                               "Likely Conditions - 90 days",
+                               "Well Aquifers"))
 
 gw_map2 <- gw_map_base %>%
   leaflet::addLayersControl(baseGroups = c("Topographic (ESRI)", "OpenStreetMap",
@@ -468,7 +513,8 @@ gw_map2 <- gw_map_base %>%
                                               "Likely Conditions - 60 days",
                                               "Likely Conditions - 90 days",
                                               "Below Normal - 14 days","Below Normal - 30 days",
-                                              "Below Normal - 60 days","Below Normal - 90 days"),
+                                              "Below Normal - 60 days","Below Normal - 90 days",
+                                              "Well Aquifers"),
                             options = leaflet::layersControlOptions(collapsed = TRUE))  %>%
   leaflet::hideGroup(group = c("Likely Conditions - 30 days",
                                "Likely Conditions - 60 days",
@@ -476,7 +522,8 @@ gw_map2 <- gw_map_base %>%
                                "Below Normal - 14 days",
                                "Below Normal - 30 days",
                                "Below Normal - 60 days",
-                               "Below Normal - 90 days"))
+                               "Below Normal - 90 days",
+                               "Well Aquifers"))
 
 
 
@@ -509,15 +556,15 @@ gw_table <- gt(data_table_table %>%
              columns = 3) %>%
   cols_align(align = "center",
              columns = 4:7) %>%
-  tab_style(style = cell_fill(color = "lightgreen"),
+  tab_style(style = cell_fill(color = "#A7D8F0"),
             locations = cells_body(
               columns = 4,
               rows = data_table_table[[4]] == "Normal")) %>%
-  tab_style(style = cell_fill(color = "lightblue"),
+  tab_style(style = cell_fill(color = "#A7D8F0"),
             locations = cells_body(
               columns = 4,
               rows = data_table_table[[4]] == "Above Normal")) %>%
-  tab_style(style = cell_fill(color = "lightpink"),
+  tab_style(style = cell_fill(color = "#F95D06"),
             locations = cells_body(
               columns = 4,
               rows = data_table_table[[4]] == "Below Normal")) %>%
@@ -557,8 +604,6 @@ for (i in 5:8) {
   }
 }
 # gw_table
-
-
 
 # Make the GT table
 
