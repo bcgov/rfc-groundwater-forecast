@@ -1,14 +1,8 @@
 ---
-title: "GLOSS - Groundwater Level Forecast Model Report"
+title: "GLOSS - Groundwater Level Forecast Model Technical References"
 output: 
   html_document:
     self-contained: true
-params:
-  forecast_date: NULL
-  map: NULL
-  map2: NULL
-  table: NULL
-  table2: NULL
 ---
 
 ```{r setup, echo=FALSE, include=FALSE}
@@ -28,7 +22,7 @@ padding: 20px 120px 20px 20px;  /* more vertical + right space */
 margin: -10px -10px 20px -10px;
 border-bottom: 4px solid rgb(227, 168, 43);
 
-font-size: 30px;
+font-size: 22px;
 font-weight: 600;
 
 position: relative;
@@ -89,89 +83,38 @@ font-family: 'BCSans', sans-serif;
 
 
 
-##### Forecast issued by the BC River Forecast Centre on `r format(params$forecast_date, "%B %d, %Y")`.
-
----
 
 The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data.
 
 Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. For more details on the model and forecasts see the <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >model overview</a> and <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >explanation of forecast chart</a>.
 
-The forecast will be updated daily throughout the year, unless issues with data availability or other issues arise.
 
-Two tabbed forecast views are provided:
-
-1. **Likelihood of Below Normal Conditions** highlights the probability that groundwater levels will fall below normal, supporting drought-focused assessment and early risk identification.
-2. **Likely Conditions (All Categories)** shows the most likely groundwater condition (below, near, or above normal), providing an overall summary of expected groundwater status.
 
 
 **GLOSS Model Links**: <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
 | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >Explanation of forecast chart</a></u>
-| <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/technical_references.html target='_blank' >Technical references </a></u>
-| <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Map.html target='_blank' >Forecast Map</a></u> | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
+| <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Map.html target='_blank' >Forecast Map</a></u> | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Report.html target='_blank' >Forecast Report</a></u> | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
 
 
 ---
 
-<div style="text-align: center;">
 
-## Groundwater Level Conditions Forecast
+### Technical References
 
-</div>
+#### Reports
 
+- Hatfield Consultants. (2025). Groundwater Level Forecasting Pilot Project: Phase 2. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_Phase2_v2.0.pdf target='_blank' >(25.0MB PDF)</a></u>
 
-
-### {.tabset .tabset-pills}
-
-#### Likelihood of Below Normal Conditions
+- Hatfield Consultants. (2024). Groundwater Level Forecasting Pilot Project. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_v3.0.pdf target='_blank' >(13.5MB PDF)</a></u>
 
 
-<h3 style="text-align: center;">Groundwater Levels Forecast: Likelihood of Below Normal Conditions</h3>
-<h5 style="text-align: center;">
-Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
-</h5>
+#### Presentations
+
+- Nunn, J. and Goetz, J. (2026). Real-Time Groundwater Level Forecasting Using Deep Learning. Webinar, Canadian Water Resource Association B.C. Branch, February 23, 2026. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/Groundwater%20Level%20Forecasting%20-%20CWRA%20Webinar%20-%20Feb%2023%202026.pdf target='_blank' >(8.5.0MB PDF)</a></u> <u><a href=https://cwra.org/feb-23-2026-bc-branch-real-time-groundwater-level-forecasting-using-deep-learning-applied-in-british-columbia/archived-event/ target='_blank' > Webinar Recording</a></u> 
+
+- **Nunn, J.**, Beckers, J., Goetz, J. and Jackson, B. (2025). Forecasting Seasonal Groundwater Levels in Rain and Snow Dominated Recharge Settings. Presented at Canadian Water Resource Association National Conference, Penticton, B.C., May 27, 2025.
 
 
-```{r map, echo=FALSE}
-# report options
-params$map
-```
-
-<h3 style="text-align: center;">Likelihood of Below Normal Groundwater Level Conditions</h3>
-
-```{r table, results = "asis", warning=FALSE}
-params$table %>%
-  tab_options(
-
-  table.font.names = "BCSans",
-  table.font.size = px(13),
-  data_row.padding = px(6),
-  column_labels.font.weight = "bold"
-  )
-```
-
-#### Likely Conditions (All Categories)
-
-
-<h3 style="text-align: center;">Groundwater Levels Forecast: Likely Conditions </h3>
-<h5 style="text-align: center;">
-Forecast as of `r format(params$forecast_date, "%B %d, %Y")`
-</h5>
-
-```{r map2, echo=FALSE}
-# report options
-params$map2
-```
-
-<h3 style="text-align: center;">Likely Groundwater Level Conditions</h3>
-
-
-```{r table2, results = "asis", warning=FALSE}
-params$table2 %>%
-  tab_options(
-    table.font.names = "BCSans"
-  )
-```
 
 
 ### Related Links
