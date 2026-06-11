@@ -76,7 +76,21 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_ENDPOINT: ${{ secrets.AWS_S3_ENDPOINT }}
-        run: Rscript -e 'source("00_Run_Model.R")'
+        run: |
+          n=0
+          until [ $n -ge 3 ]
+          do
+            Rscript -e 'source("00_Run_Model.R")' && break
+            n=$((n+1))
+            echo "R script failed. Retry $n/3..."
+            sleep 20
+          done
+
+          if [ $n -ge 3 ]; then
+            echo "R script failed after 3 attempts"
+            exit 1
+          fi
+
 
       - name: Upload results to ArcGIS Online
         env:
