@@ -84,12 +84,7 @@ font-family: 'BCSans', sans-serif;
 
 
 
-The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data.
-
-Forecasts provide a range of likely conditions and are presented as likelihoods of groundwater being above, below, or near normal. This analysis uses the “normal” term solely in reference to water levels between the 25th to 75th percentiles of historical data, not to imply a steady state baseline for comparison. Data should be interpreted with the context of long-term records, patterns, and trends. For more details on the model and forecasts see the <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >model overview</a> and <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >explanation of forecast chart</a>.
-
-
-
+The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level model provides forecasts for 14, 30, 60, and 90 days in advance. It uses artificial neural networks, a type of machine learning, to relate groundwater levels to historic precipitation, temperature, and, if applicable, snowpack data. The model also accounts for recharge lag times, capturing how groundwater responds to hydroclimate data. For more details on the model and forecasts see the <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >model overview</a> and <a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >explanation of forecast chart</a>.
 
 **GLOSS Model Links**: <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
 | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >Explanation of forecast chart</a></u>
@@ -100,22 +95,39 @@ Forecasts provide a range of likely conditions and are presented as likelihoods 
 
 
 ### Technical References
+<br>
 
 #### Reports
 
-- Hatfield Consultants. (2025). Groundwater Level Forecasting Pilot Project: Phase 2. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_Phase2_v2.0.pdf target='_blank' >(25.0MB PDF)</a></u>
+- Hatfield Consultants. (2025). Groundwater Level Forecasting Pilot Project: Phase 2. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. (<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_Phase2_v2.0.pdf target='_blank' >25.0MB PDF</a></u>)
 
-- Hatfield Consultants. (2024). Groundwater Level Forecasting Pilot Project. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_v3.0.pdf target='_blank' >(13.5MB PDF)</a></u>
+- Hatfield Consultants. (2024). Groundwater Level Forecasting Pilot Project. Prepared for the Ministry of Water, Land and Resource Stewardship, British Columbia. (<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/MWLR12378_Groundwater_Level_Forecasting_Report_v3.0.pdf target='_blank' >13.5MB PDF</a></u>)
 
+<br>
 
 #### Presentations
 
-- Nunn, J. and Goetz, J. (2026). Real-Time Groundwater Level Forecasting Using Deep Learning. Webinar, Canadian Water Resource Association B.C. Branch, February 23, 2026. <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/Groundwater%20Level%20Forecasting%20-%20CWRA%20Webinar%20-%20Feb%2023%202026.pdf target='_blank' >(8.5.0MB PDF)</a></u> <u><a href=https://cwra.org/feb-23-2026-bc-branch-real-time-groundwater-level-forecasting-using-deep-learning-applied-in-british-columbia/archived-event/ target='_blank' > Webinar Recording</a></u> 
+- Nunn, J. and Goetz, J. (2026). Real-Time Groundwater Level Forecasting Using Deep Learning. Webinar, Canadian Water Resource Association B.C. Branch, February 23, 2026. (<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/Groundwater%20Level%20Forecasting%20-%20CWRA%20Webinar%20-%20Feb%2023%202026.pdf target='_blank' >8.5.0MB PDF</a></u>;  <u><a href=https://cwra.org/feb-23-2026-bc-branch-real-time-groundwater-level-forecasting-using-deep-learning-applied-in-british-columbia/archived-event/ target='_blank' > Webinar Recording</a></u>)
 
 - **Nunn, J.**, Beckers, J., Goetz, J. and Jackson, B. (2025). Forecasting Seasonal Groundwater Levels in Rain and Snow Dominated Recharge Settings. Presented at Canadian Water Resource Association National Conference, Penticton, B.C., May 27, 2025.
 
+<br>
+
+#### Background and Previous Work
+
+- Gullacher, A., D.M. Allen, and J.D. Goetz. (2023). Early Warning Indicators of Groundwater Drought in Mountainous Regions. Water Resources Research, Volume 59, Issue 8. (<u><a href=https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2022WR033399 target='_blank' >1.3 PDF</a></u>)
+
+- Gullacher, A., D.M. Allen, and J.D. Goetz. (2023). Indicators of Groundwater Drought in British Columbia. Water Science Series, WSS2023-01, Prov. B.C., Victoria. (<u><a href=https://a100.gov.bc.ca/pub/acat/documents/r60200/GW_Drought_Indicators_1673396362732_BDD4B484D0.pdf target='_blank' >3.8MB PDF</a></u>)
+
+- Gullacher, A., D.M. Allen, and J.D. Goetz. (2021). Classification of Groundwater Response Mechanisms in Provincial
+Observation Wells Across British Columbia. Water Science Series, WSS2021-03, Prov. B.C., Victoria. (<u><a href=https://a100.gov.bc.ca/pub/acat/documents/r59107/ObsWellClassification_1618356058473_0A16BC34FE.pdf target='_blank' >7.9MB PDF</a></u>)
 
 
+
+
+
+
+---
 
 ### Related Links
 
@@ -128,6 +140,9 @@ Forecasts provide a range of likely conditions and are presented as likelihoods 
 | <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
 
 \columnbreak
+
+---
+
 
 ### Disclaimer
 

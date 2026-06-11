@@ -102,7 +102,7 @@ The forecast will be updated daily throughout the year, unless issues with data 
 Two tabbed forecast views are provided:
 
 1. **Likelihood of Below Normal Conditions** highlights the probability that groundwater levels will fall below normal, supporting drought-focused assessment and early risk identification.
-2. **Likely Conditions (All Categories)** shows the most likely groundwater condition (below, near, or above normal), providing an overall summary of expected groundwater status.
+2. **Likely Conditions (All Categories)** shows the most likely groundwater condition (below, near, or above normal), providing an overall summary of possible groundwater status.
 
 
 **GLOSS Model Links**: <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
@@ -173,6 +173,8 @@ params$table2 %>%
   )
 ```
 
+---
+
 
 ### Related Links
 
@@ -185,6 +187,9 @@ params$table2 %>%
 | <u><a href=https://droughtportal.gov.bc.ca/ target='_blank' >B.C. Drought Information Portal</a></u>
 
 \columnbreak
+
+---
+
 
 ### Disclaimer
 
