@@ -82,7 +82,8 @@ pkgs <- c('dplyr',
           'pak',
           'aws.s3',
           'showtext',
-          'qpdf'#,
+          'qpdf',
+          'lutz'#,
           #'webshot2'
           )
 
