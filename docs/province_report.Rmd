@@ -108,7 +108,7 @@ Two tabbed forecast views are provided:
 **GLOSS Model Links**: <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_overview.pdf target='_blank' >Overview</a></u>
 | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/gw_forecast_chart_details.pdf target='_blank' >Explanation of forecast chart</a></u>
 | <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/technical_references.html target='_blank' >Technical references </a></u>
-| <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Map.html target='_blank' >Forecast Map</a></u> | <u><a href=https://github.com/bcgov/rfc-groundwater-forecast target='_blank' >Code (GitHub)</a></u>
+| <u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/outputs/Groundwater_Level_Forecast_Map.html target='_blank' >Forecast Map</a></u>
 
 
 ---
