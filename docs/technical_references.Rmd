@@ -109,7 +109,7 @@ The Groundwater Level Outlook Simulation System, or GLOSS, groundwater level mod
 
 - Nunn, J. and Goetz, J. (2026). Real-Time Groundwater Level Forecasting Using Deep Learning. Webinar, Canadian Water Resource Association B.C. Branch, February 23, 2026. (<u><a href=https://nrs.objectstore.gov.bc.ca/rfc-conditions/groundwater_forecast/documentation/Groundwater%20Level%20Forecasting%20-%20CWRA%20Webinar%20-%20Feb%2023%202026.pdf target='_blank' >8.5.0MB PDF</a></u>;  <u><a href=https://cwra.org/feb-23-2026-bc-branch-real-time-groundwater-level-forecasting-using-deep-learning-applied-in-british-columbia/archived-event/ target='_blank' > Webinar Recording</a></u>)
 
-- **Nunn, J.**, Beckers, J., Goetz, J. and Jackson, B. (2025). Forecasting Seasonal Groundwater Levels in Rain and Snow Dominated Recharge Settings. Presented at Canadian Water Resource Association National Conference, Penticton, B.C., May 27, 2025.
+- Nunn, J., Beckers, J., Goetz, J. and Jackson, B. (2025). Forecasting Seasonal Groundwater Levels in Rain and Snow Dominated Recharge Settings. Presented at Canadian Water Resource Association National Conference, Penticton, B.C., May 27, 2025.
 
 <br>
 
